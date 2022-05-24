@@ -1,4 +1,5 @@
 # Custom
+tmp/
 
 # Config folder
 .secrets/

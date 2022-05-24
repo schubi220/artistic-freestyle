@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% load main_extra %}
+{% load static %}
+
+{% block body %}
+  <h1>{{ competiton.name }}</h1>
+
+  <ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item"><a href="#result" class="nav-link active" aria-controls="result" role="tab" data-toggle="tab">Gesamt</a></li>
+    <li class="nav-item"><a href="#detail" class="nav-link" aria-controls="detail" role="tab" data-toggle="tab">Übersicht</a></li>
+    {% for jtype in judgetypes %}
+    <li class="nav-item"><a href="#tab{{ jtype }}1" class="nav-link" aria-controls="tab{{ jtype }}1" role="tab" data-toggle="tab">{{ jtype }} 1</a></li>
+    <li class="nav-item"><a href="#tab{{ jtype }}2" class="nav-link" aria-controls="tab{{ jtype }}2" role="tab" data-toggle="tab">{{ jtype }} 2</a></li>
+    {% endfor %}
+    <li class="nav-item"><a href="#pdfdetail" class="nav-link" aria-controls="pdfdetail" role="tab" data-toggle="tab">PDF Übersicht</a></li>
+    <li class="nav-item"><a href="#pdfresult" class="nav-link" aria-controls="pdfresult" role="tab" data-toggle="tab">PDF Aushang</a></li>
+    <li class="nav-item"><a href="#pdfcertificate" class="nav-link" aria-controls="pdfcertificate" role="tab" data-toggle="tab">PDF Urkunden</a></li>
+  </ul>
+  <div class="tab-content">
+
+
+    <div role="tabpanel" class="tab-pane fade show active table-responsive" id="result">
+      <table class="table table-bordered table-hover table-sm">
+        <thead>
+          <tr>
+            <th>Titel</th>
+            <th>Name</th>
+            <th>Verein</th>
+            {% for jtype in judgetypes %}
+              <th>{{ jtype }}</th>
+            {% endfor %}
+            <th>Ergebniss</th>
+            <th>Platz</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cnt in result.place %}
+            {% with start=starts|return_item:cnt %}
+            <tr{% if not start.isActive %} class="canceled"{% endif %}>
+              <td>{{ start.info }}</td>
+              <td>{{ start.competitors_names }}</td>
+              <td>{{ start.competitors_clubs }}</td>
+              {% for jtype in judgetypes %}
+                <td>{{ result|return_item:jtype|return_item:start.id|percent:2 }}</td>
+              {% endfor %}
+              <td>{{ result.full|return_item:start.id|percent:2 }}</td>
+              <td>{{ result.place|return_item:cnt }}</td>
+            </tr>
+            {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+
+    <div role="tabpanel" class="tab-pane fade table-responsive" id="detail">
+      <table class="table table-bordered table-hover table-sm">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Verein</th>
+            <th>Titel</th>
+            <th colspan="2">Gesamt</th>
+            {% for jtype in judgetypes %}
+              <th style="border-left: thin solid #000;">{{ jtype }}</th>
+              {% for judge in judges %}{% if judge.type == jtype %}
+                <th colspan="2" style="border-left: thin solid #000;">{{ judge.possition }}</th>
+              {% endif %}{% endfor %}
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for start in starts %}
+            <tr{% if not start.isActive %} class="canceled"{% endif %}>
+              <td>{{ start.order }}</td>
+              <td>{{ start.competitors_names }}</td>
+              <td>{{ start.competitors_clubs }}</td>
+              <td>{{ start.info }}</td>
+              <td></td>
+              <td>{{ result.full|return_item:start.id|percent:2 }}</td>
+              {% for jtype in judgetypes %}
+                <td style="border-left: thin solid #000;">{{ result|return_item:jtype|return_item:start.id|percent:2 }}</td>
+                {% for judge in judges %}{% if judge.type == jtype %}
+                  {% with v=values|return_item:judge.possition %}
+                    {% with value=v|return_item:start.id %}
+                    <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
+                    <td>{{ value.values.result|percent:2 }}</td>
+                    {% endwith %}
+                  {% endwith %}
+                {% endif %}{% endfor %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+
+    {% for jtype in judgetypes %}
+    <div role="tabpanel" class="tab-pane fade table-responsive" id="tab{{ jtype }}1">
+      <table class="table table-bordered table-hover table-sm">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Verein</th>
+            <th>Titel</th>
+            <th>Gesamt</th>
+            {% for judge in judges %}{% if judge.type == jtype %}
+              <th colspan="2" style="border-left: thin solid #000;">{{ judge.possition }}</th>
+            {% endif %}{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for start in starts %}
+            <tr{% if not start.isActive %} class="canceled"{% endif %}>
+              <td>{{ start.order }}</td>
+              <td>{{ start.competitors_names }}</td>
+              <td>{{ start.competitors_clubs }}</td>
+              <td>{{ start.info }}</td>
+              <td>{{ result|return_item:jtype|return_item:start.id }}</td>
+              {% for judge in judges %}{% if judge.type == jtype %}
+                {% with v=values|return_item:judge.possition %}
+                  {% with value=v|return_item:start.id %}
+                    <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
+                    <td>{{ value.values.result|percent:2 }}</td>
+                  {% endwith %}
+                {% endwith %}
+              {% endif %}{% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div role="tabpanel" class="tab-pane fade table-responsive" id="tab{{ jtype }}2">
+      <table class="table table-bordered table-hover table-sm">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Verein</th>
+            <th>Titel</th>
+            <th>Ergebniss</th>
+            {% for judge in judges %}{% if judge.type == jtype %}
+              <th colspan="3" style="border-left: thin solid #000;">{{ judge.possition }}</th>
+              <th>1</th>
+              <th>2</th>
+              <th>3</th>
+            {% endif %}{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for start in starts %}
+            <tr{% if not start.isActive %} class="canceled"{% endif %}>
+              <td>{{ start.order }}</td>
+              <td>{{ start.competitors_names }}</td>
+              <td>{{ start.competitors_clubs }}</td>
+              <td>{{ start.info }}</td>
+              <td>{{ result|return_item:jtype|return_item:start.id|percent:2 }}</td>
+              {% for judge in judges %}{% if judge.type == jtype %}
+                {% with v=values|return_item:judge.possition %}
+                  {% with value=v|return_item:start.id %}
+                    <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
+                    <td>{{ value.values.result|percent:2 }}</td>
+                    <td>{{ value.values.summe }}</td>
+                    <td>{{ value.values.0 }}</td>
+                    <td>{{ value.values.1 }}</td>
+                    <td>{{ value.values.2 }}</td>
+                  {% endwith %}
+                {% endwith %}
+              {% endif %}{% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+
+
+    <div role="tabpanel" class="tab-pane fade table-responsive" id="pdfdetail">
+      <iframe style="width: 297mm; height: 210mm;" src="{% url 'artistic:pdf' 'pdfdetail' %}"></iframe>
+    </div>
+
+
+    <div role="tabpanel" class="tab-pane fade table-responsive" id="pdfresult">
+      <iframe style="width: 297mm; height: 210mm;" src="{% url 'artistic:pdf' 'pdfresult' %}"></iframe>
+    </div>
+
+
+    <div role="tabpanel" class="tab-pane fade table-responsive" id="pdfcertificate">
+      <iframe style="width: 297mm; height: 210mm;" src="{% url 'artistic:pdf' 'pdfcertificate' %}"></iframe>
+    </div>
+
+
+  </div>
+{% endblock %}

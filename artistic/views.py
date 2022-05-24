@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from artistic.models import Judge, Start, Value, Competition
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.contrib import messages
-from artistic import resultworker
+from artistic import resultworker, pdfview
+from django.conf import settings
 
 # Create your views here.
 
@@ -111,3 +112,94 @@ def free(request):
         'c': c,
         'judges': j
     })
+
+
+def rate(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+
+    try:
+        c = Competition.objects.get(id=request.session.get('actcompetition'))
+    except:
+        messages.warning(request, 'Keine Altersklasse gewählt')
+        return HttpResponseRedirect(reverse('artistic:free'))
+
+    s = Start.objects.filter(competition=c, isActive=True).order_by('order')
+    j = Judge.objects.filter(competition=c)
+
+    values = {}
+    judgetypes = {}
+    result = {}
+    result['full'] = {}
+    for judge in j:
+        if judge.type in judgetypes:
+            judgetypes[judge.type] += 1
+        else:
+            judgetypes[judge.type] = 1
+            result[judge.type] = {}
+
+        calc = getattr(resultworker, 'calc' + judge.type)
+        values[judge.possition] = calc(s, judge)
+
+        for value in values[judge.possition]:
+            if not value in result[judge.type]:
+                result[judge.type][value] = 0
+            result[judge.type][value] += values[judge.possition][value].values['result']
+
+    sort = {}
+    same = {}
+    cnt = 0
+    for start in s:
+        for jtype in judgetypes:
+            result[jtype][start.id] = result[jtype][start.id] / judgetypes[jtype]
+        result['full'][start.id] = round(result['T'][start.id]*0.45 + result['P'][start.id]*0.45 + result['D'][start.id]*0.1, 4)
+        a = str(round(result['T'][start.id], 4))[2:]
+        a = str(result['full'][start.id])+a
+        print(a)
+        while a in sort:
+            a += '0'
+            same[a] = 0
+        sort[a] = cnt
+        cnt += 1
+
+    pl = 1
+    result['place'] = {}
+    for res in sorted(sort, reverse=True):
+        if res in same:
+            if same[res] > 0:
+                result['place'][sort[res]] = same[res]
+            else:
+                result['place'][sort[res]] = pl
+            del same[res]
+            same[res[0:-1]] = result['place'][sort[res]]
+        else:
+            result['place'][sort[res]] = pl
+        pl += 1
+
+    context = {
+        'competiton': c,
+        'starts': s,
+        'judges': j,
+        'judgetypes': judgetypes,
+        'values': values,
+        'result': result
+    }
+    pdfview.pdfdetail(context)
+    pdfview.pdfresult(context)
+    pdfview.pdfcertificate(context)
+    return render(request, "artistic/rate.html", context)
+
+def wrappdf(request, filename):
+    if not request.user.is_authenticated:
+        return HttpResponseNotFound('<h1>File not exist</h1>')
+    c = Competition.objects.get(id=request.session.get('actcompetition'))
+
+    file_location = str(settings.BASE_DIR) + '/tmp/'+filename+'.pdf'
+
+    #    try:
+    response = HttpResponse(open(file_location, 'rb'), content_type='application/pdf')
+    response['Content-Disposition'] = 'filename='+c.name+'.pdf'
+    #    except:
+    #        response = HttpResponseNotFound('<h1>File not exist</h1>')
+
+    return response
