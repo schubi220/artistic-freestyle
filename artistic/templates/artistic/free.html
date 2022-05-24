@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block body %}
+  <form action="{% url 'artistic:free' %}" method="post">
+    {% csrf_token %}
+
+    <select name="actcompetition" onchange="this.form.submit()">
+      {% for competiton in competitions %}
+        <option value="{{ competiton.id }}"{% if competiton.id == c.id %} selected{% endif %}>{{ competiton.id }}# {{ competiton.name }}</option>
+      {% endfor %}
+    </select>
+
+    {% if judges %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Possition</th>
+            <th>Art</th>
+            <th>Code</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for judge in judges %}
+            <tr>
+              <td>{{ judge.name }}</td>
+              <td>{{ judge.possition }}</td>
+              <td>{{ judge.type }}</td>
+              <td>{{ judge.code }}</td>
+              <td>
+                {% if judge.isActive %}
+                  <button type="submit" name="judgeid" value="{{ judge.id }}" class="btn btn-sm btn-warning">Freigeben</button>
+                {% else %}
+                  <button type="submit" name="judgeid" value="{{ judge.id }}" class="btn btn-sm btn-danger">Sperren</button>
+                {% endif %}
+                <button type="submit" name="judgecorrect" value="{{ judge.id }}" class="btn btn-sm btn-primary">Wertung bearbeiten</button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="input-group mb-3">
+        <input type="text" name="cntnew" class="form-control" aria-label="Number of Judges" aria-describedby="button-add-judges">
+        <div class="input-group-append">
+          <button type="submit" name="addnew" value="1" class="btn btn-outline-primary" type="button" id="button-add-judges">Judges erstellen</button>
+        </div>
+      </div>
+    {% endif %}
+  </form>
+{% endblock %}

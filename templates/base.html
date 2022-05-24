@@ -26,9 +26,18 @@
 
       <div class="collapse navbar-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'artistic:input' %}">Eingabe</a>
-          </li>
+          {% if user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'artistic:free' %}">Korrektur / Judges Verwalten</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'admin:index' %}" target="_blank">Django Admin</a>
+            </li>
+          {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'artistic:input' %}">Eingabe</a>
+            </li>
+          {% endif %}
         </ul>
       </div>
       <form class="form-inline">

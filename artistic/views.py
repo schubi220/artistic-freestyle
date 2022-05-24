@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from artistic.models import Judge, Start, Value
+from artistic.models import Judge, Start, Value, Competition
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib import messages
@@ -66,3 +66,48 @@ def input(request):
             'starts': s,
             'values': values
         })
+
+
+def free(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+
+    cl = Competition.objects.filter(event__id=1)
+
+    id = request.POST.get('judgeid', False)
+    if id:
+        j = Judge.objects.get(id=id)
+        j.isActive = not j.isActive
+        j.save()
+
+    id = request.POST.get('judgecorrect', False)
+    if id:
+        j = Judge.objects.get(id=id)
+        j.isActive = True
+        j.save()
+        request.session['accesscode'] = j.code
+        return HttpResponseRedirect(reverse('artistic:input'))
+
+    actcompetition = request.POST.get('actcompetition', False)
+    if actcompetition:
+        request.session['actcompetition'] = actcompetition
+
+    c = Competition.objects.get(id=request.session.get('actcompetition', 1))
+
+    if request.POST.get('cntnew', False):
+        for i in range(1, int(request.POST.get('cntnew'))+1):
+            j = Judge(name='', possition='T'+str(i), type='T', competition=c)
+            j.save()
+            j = Judge(name='', possition='P'+str(i), type='P', competition=c)
+            j.save()
+        for i in [1,2]:
+            j = Judge(name='', possition='D'+str(i), type='D', competition=c)
+            j.save()
+
+    j = Judge.objects.filter(competition=c)
+
+    return render(request, "artistic/free.html", {
+        'competitions': cl,
+        'c': c,
+        'judges': j
+    })
