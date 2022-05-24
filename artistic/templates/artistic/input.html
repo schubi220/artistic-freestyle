@@ -1,0 +1,58 @@
+ {% extends "base.html" %}
+ {% load main_extra %}
+
+ {% block body %}
+  <form action="{% url 'artistic:input' %}" method="post">
+    {% csrf_token %}
+    <h2>Judge: {{ judge.possition }}, Altersklasse: {{ judge.competition.name }}</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Verein</th>
+          <th>Titel</th>
+          {% if judge.type == 'T' %}
+            <th>Quantity of Unicycling Skills and Transitins</th>
+            <th>Mastery And Quality of Execution</th>
+            <th>Difficulty And Duration</th>
+          {% elif judge.type == 'P' %}
+            <th>Presence/Execution</th>
+            <th>Composition/Choreography</th>
+            <th>Interpretation of the Music/Timing</th>
+          {% elif judge.type == 'D' %}
+            <th>Minor Dismounts</th>
+            <th>Major Dismounts</th>
+            <th>Number of Riders</th>
+          {% endif %}
+          <th colspan="3">Ergebniss</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for start in starts %}
+          <tr id="start{{ start.id }}"{% if not start.isActive %} class="canceled"{% endif %}>
+            <td>{{ start.order }}</td>
+            <td>{{ start.competitors_names }}</td>
+            <td>{{ start.competitors_clubs }}</td>
+            <td>{{ start.info }}</td>
+            {% with value=values|return_item:start.id %}
+              <td><input type=number step=any value="{{ value.values.0 }}" name="{{ start.id }}v0" class="form-control" size="6" {% if not start.isActive %} disabled{% endif %}></td>
+              <td><input type=number step=any value="{{ value.values.1 }}" name="{{ start.id }}v1" class="form-control" size="6" {% if not start.isActive %} disabled{% endif %}></td>
+              <td><input type=number step=any value="{{ value.values.2 }}" name="{{ start.id }}v2" class="form-control" size="6" {% if not start.isActive %} disabled{% endif %}></td>
+              <td>{{ value.values.summe|floatformat:3 }}</td>
+              <td>{{ value.values.place }}</td>
+              <td>{{ value.values.result|percent:2 }}</td>
+            {% endwith %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="form-group row">
+      <div class="col-sm-10">
+        <button type="submit" name="save" class="btn btn-primary">Speichern</button>
+        <button type="submit" name="ready" class="btn btn-primary">Fertig</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}
