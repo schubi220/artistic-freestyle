@@ -56,3 +56,33 @@
     </div>
   </form>
 {% endblock %}
+
+{% block javascripts %}
+<script type="text/javascript">
+	function isSleep(){
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				//console.log(this.responseText);
+				setMode(this.responseText);
+			}
+		};
+		xhttp.open("GET", "{% url 'artistic:displayMode' %}", true);
+		xhttp.send();
+	}
+/* Funktion zum Umsetzung des Modus: Anzeigen der WordClock oder der Startliste */
+  var oldmode = 0;
+	function setMode(mode){
+		if (mode != oldmode) {
+      $( "#start" + mode ).addClass("table-info");
+      $( "#start" + oldmode ).removeClass("table-info");
+			oldmode = mode;
+		}
+	}
+
+  $( document ).ready(function() {
+		isSleep();
+		window.setInterval(isSleep,5000);
+	});
+</script>
+{% endblock %}

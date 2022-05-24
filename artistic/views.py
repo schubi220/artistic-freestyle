@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from artistic.models import Judge, Start, Value, Competition
-from django.http import HttpResponseRedirect, HttpResponse
+from artistic.models import Judge, Start, Value, Competition, Config
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.contrib import messages
 from artistic import resultworker, pdfview
@@ -227,3 +227,59 @@ def wrappdf(request, filename):
     #        response = HttpResponseNotFound('<h1>File not exist</h1>')
 
     return response
+
+
+def displaySettings(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+
+    actcompetition = request.POST.get('actcompetition', False)
+    if actcompetition:
+        request.session['actcompetition'] = actcompetition
+
+    actstart = request.POST.get('actstart', False)
+    if actstart:
+        s = Config.objects.get(key='act_start')
+        s.value = actstart
+        s.save()
+
+    try:
+        c = Competition.objects.get(id=request.session.get('actcompetition'))
+    except:
+        messages.warning(request, 'Keine Altersklasse gewählt')
+        return HttpResponseRedirect(reverse('artistic:free'))
+
+    cl = Competition.objects.filter(event__id=1)
+    s = Start.objects.filter(competition=c).order_by('order')
+
+    return render(request, "artistic/displaySettings.html", {
+        'competitions': cl,
+        'c': c,
+        'starts': s
+    })
+
+def displayBeamer(request):
+    return render(request, "artistic/displayBeamer.html")
+
+def displayMonitor(request):
+    return render(request, "artistic/displayMonitor.html")
+
+def displayMode(request):
+    return HttpResponse(Config.objects.get(key='act_start').value)
+
+def displayPushPull(request):
+    act = Config.objects.get(key='act_start').value
+    s = Start.objects.filter(id__gte=act).order_by('time')[:10]
+
+    send = []
+    for start in s:
+        send.append({
+            'strnbr': start.order,
+            'actors': start.competitors_names(),
+            'titel': start.info,
+            'club': start.competitors_clubs(),
+            'cat': start.competition.name,
+            'time': start.time.strftime("%H:%M"),
+        })
+
+    return JsonResponse(send, safe=False)

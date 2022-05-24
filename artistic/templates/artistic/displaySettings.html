@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block body %}
+  <form action="{% url 'artistic:displaySettings' %}" method="post">
+    {% csrf_token %}
+
+    <select name="actcompetition" onchange="this.form.submit()">
+      {% for competiton in competitions %}
+        <option value="{{ competiton.id }}"{% if competiton.id == c.id %} selected{% endif %}>{{ competiton.id }}# {{ competiton.name }}</option>
+      {% endfor %}
+    </select>
+
+    <div class="row">
+      <div class="col-md-8">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Verein</th>
+              <th>Titel</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for start in starts %}
+              <tr id="start{{ start.id }}"{% if not start.isActive %} class="canceled"{% endif %}>
+                <td>{{ start.order }}</td>
+                <td>{{ start.competitors_names }}</td>
+                <td>{{ start.competitors_clubs }}</td>
+                <td>{{ start.info }}</td>
+                <td><button type="submit" name="actstart" value="{{ start.id }}" class="btn btn-sm btn-primary">Wählen</button></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <button type="submit" class="btn btn-success" name="actstart" value="-1">Ausschalten</button>
+    	</div>
+    	<div class="col-md-4">
+    		<div class="alert alert-secondary" role="alert">
+    			<div class="text-center">
+            <p id="currentCat"></p>
+            <h1 id="currentName"></h1>
+            <p id="currentClub"></p>
+    				<p>&nbsp;</p>
+            <p id="currentAct"></p>
+          </div>
+    		</div>
+    	</div>
+    </div>
+  </form>
+{% endblock %}
+
+{% block javascripts %}
+<script type="text/javascript">
+/* Funktion um die JSON Datei einzulesen.
+Der erste Eintrag ist der aktuelle Starter, die weiteren Einträge sind die kommenden Starter */
+	function parse(json){
+		var starters = JSON.parse(json);
+//		if(starters.length>0){
+			if(1){
+//			document.getElementById("currentStartNr").innerText = starters[0].strnbr;
+			document.getElementById("currentCat").innerText = starters[0].cat;
+			document.getElementById("currentName").innerText = starters[0].actors;
+			document.getElementById("currentClub").innerText = starters[0].club;
+			document.getElementById("currentAct").innerText = starters[0].titel;
+		}
+	}
+
+/* Funktion welche die Startliste abruft */
+	function pull(){
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				parse(this.responseText,'JSON');
+			}
+		};
+		xhttp.open("GET", "{% url 'artistic:displayPushPull' %}", true);
+		xhttp.send();
+	}
+
+/* Funktion welche den Modus abruft: Anzeigen der WordClock oder der Startliste */
+	function isSleep(){
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				//console.log(this.responseText);
+				setMode(this.responseText);
+			}
+		};
+		xhttp.open("GET", "{% url 'artistic:displayMode' %}", true);
+		xhttp.send();
+	}
+/* Funktion zum Umsetzung des Modus: Anzeigen der WordClock oder der Startliste */
+  var oldmode = 0;
+	function setMode(mode){
+		if (mode != oldmode) {
+      $( "#start" + mode ).addClass("table-info");
+      $( "#start" + oldmode ).removeClass("table-info");
+			pull();
+			oldmode = mode;
+		}
+	}
+
+  $( document ).ready(function() {
+		isSleep();
+		window.setInterval(isSleep,5000);
+	});
+</script>
+{% endblock %}
