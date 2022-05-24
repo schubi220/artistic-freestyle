@@ -1,0 +1,111 @@
+{% load static %}
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+    <style>
+      .navbar { margin-bottom: 1rem; }
+      tr.canceled td, tr td.canceled { font-style: italic; background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQImWP4JST0HwAFRgIefzRCKwAAAABJRU5ErkJggg=='); background-repeat: repeat-x; background-position: 50% 50%; }
+    </style>
+    {% block stylesheets %}{% endblock %}
+
+    <title>{% block title %}Welcome!{% endblock %}</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Einrad</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+        </ul>
+      </div>
+      <form class="form-inline">
+        {% if user.is_authenticated %}
+          <a href="{% url 'admin:logout' %}?next=/" class="btn btn-dark">Logout</a>
+        {% else %}
+          <a href="{% url 'admin:login' %}?next=/" class="btn btn-dark">Admin Login</a>
+        {% endif %}
+      </form>
+    </nav>
+
+    {% if messages %}
+    <div class="container">
+        {% for message in messages %}
+        <div{% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %} role="alert">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main role="main" class="container-fluid">
+      {% block body %}<h1>Hello, world!</h1>{% endblock %}
+    </main><!-- /.container-fluid -->
+
+		<footer>
+			<hr>
+			<div class="container-fluid">
+				<ul class="nav nav-pills nav-fill">
+					<li class="nav-item">
+            <a class="nav-link disabled" href="#">Einrad Wertung</a>
+          </li>
+					<li class="nav-item">
+            <a class="nav-link" href="{% url 'home' %}">Home</a>
+          </li>
+					<li class="nav-item">
+            <a class="nav-link" href="#">Dokumentation</a>
+          </li>
+					<li class="nav-item">
+            <a class="nav-link disabled" href="#">Copyright 2022 @Lukas</a>
+          </li>
+				</ul>
+			</div><!-- /.container-fluid -->
+		</footer>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js" integrity="sha384-VHvPCCyXqtD5DqJeNxl2dtTyhF78xXNXdkwX1CZeRusQfRKp+tA7hAShOK/B/fQ2" crossorigin="anonymous"></script>
+
+    <script>
+      $(document).ready(function() {
+      	fixFooter();//at page load
+      	$('.alert').on('closed.bs.alert', function () {
+      		fixFooter();//at alert close
+      	});
+      });
+
+      $(window).resize(function() {
+      	fixFooter();//at page resize
+      });
+
+      function fixFooter() {
+      	footer=$("footer");
+      	height=footer.height();
+      	paddingTop=parseInt(footer.css('padding-top'),10);//zero if is undefined
+      	paddingBottom=parseInt(footer.css('padding-bottom'),10);//zero if is undefined
+      	totalHeight=(height+paddingTop+paddingBottom);
+      	footerPosition=footer.position();
+      	windowHeight=$(window).height();
+      	height=(windowHeight - footerPosition.top)-totalHeight;
+      	if ( height > 0 ) {
+      		footer.css({
+      			'margin-top': (height) + 'px'
+      		});
+      	}
+      }
+    </script>
+    {% block javascripts %}{% endblock %}
+  </body>
+</html>
