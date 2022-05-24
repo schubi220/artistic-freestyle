@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from artistic.models import Judge, Start, Value, Competition, Config
+from artistic.models import Judge, Start, Value, Competition, Config, Event
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.contrib import messages
@@ -73,7 +73,7 @@ def free(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
 
-    cl = Competition.objects.filter(event__id=1)
+    cl = Competition.objects.filter(event__id=Config.objects.get(key='event_id').value)
 
     id = request.POST.get('judgeid', False)
     if id:
@@ -229,6 +229,47 @@ def wrappdf(request, filename):
     return response
 
 
+def read_csv(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+
+    csvfile = request.POST.get('csvfile', False)
+    text = ''
+
+    e = Event.objects.get(id=Config.objects.get(key='event_id').value)
+
+    if csvfile:
+        for row in csvfile.splitlines():
+            data = row.split('\t')
+
+            if data[0] != 'x' and data[0] != 'X' and data[0] != '':
+
+                # anlegen Altersklasse
+                try:
+                    c = Competition.objects.get(name__iexact=data[0])
+                except Competition.DoesNotExist:
+                    c = Competition(name=data[0], minAge=0, maxAge=0, discipline="FA", event=e)
+                    c.save()
+                # anlegen des Starts
+                s = Start(order=data[2], competition=c, info=data[4], time=datetime.strptime('22-05-2022 '+data[7], '%d-%m-%Y %H:%M'))
+                s.save()
+
+                for person in data[5].split(' und '):
+                    person = person.split(' ', 1)
+                    try:
+                        p = Person.objects.get(firstname=person[0], lastname=person[1], event=e)
+                    except Person.DoesNotExist:
+                        p = Person(firstname=person[0], lastname=person[1], gender='d', email='', club=data[6], dateofbirth=datetime.strptime('0', '%H'), event=e)
+                    p.save()
+                    s.people.add(p)
+
+                text += s.order + '# ' + s.info + '\r\n'
+
+    return render(request, "artistic/import.html", {
+        'text': text
+    })
+
+
 def displaySettings(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
@@ -249,7 +290,7 @@ def displaySettings(request):
         messages.warning(request, 'Keine Altersklasse gewählt')
         return HttpResponseRedirect(reverse('artistic:free'))
 
-    cl = Competition.objects.filter(event__id=1)
+    cl = Competition.objects.filter(event__id=Config.objects.get(key='event_id').value)
     s = Start.objects.filter(competition=c).order_by('order')
 
     return render(request, "artistic/displaySettings.html", {
