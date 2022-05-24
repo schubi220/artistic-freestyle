@@ -113,6 +113,30 @@ def free(request):
         'judges': j
     })
 
+def inputpdf(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+
+    try:
+        c = Competition.objects.get(id=request.session.get('actcompetition'))
+    except:
+        messages.warning(request, 'Keine Altersklasse gewählt')
+        return HttpResponseRedirect(reverse('artistic:free'))
+
+    s = Start.objects.filter(competition=c).order_by('order')
+    j = Judge.objects.filter(competition=c)
+
+    pdfview.pdfinput({
+        'starts': s,
+        'judges': j
+    })
+
+    file_location = str(settings.BASE_DIR) + '/tmp/pdfinput.pdf'
+
+    response = HttpResponse(open(file_location, 'rb'), content_type='application/pdf')
+    response['Content-Disposition'] = 'filename='+c.name+'_sheed.pdf'
+    return response
+
 
 def rate(request):
     if not request.user.is_authenticated:

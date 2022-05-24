@@ -7,6 +7,7 @@ urlpatterns = [
     path('code', views.code, name='code'),
     path('input', views.input, name='input'),
     path('free', views.free, name='free'),
+    path('inputpdf', views.inputpdf, name='inputpdf'),
     path('rate', views.rate, name='rate'),
-    re_path('pdf/(?P<filename>(pdfdetail|pdfresult|pdfcertificate|pdfinput))', views.wrappdf, name='pdf'),
+    re_path('rate/pdf/(?P<filename>(detail|result|certificate))', views.wrappdf, name='ratepdf'),
 ]
