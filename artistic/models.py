@@ -76,14 +76,16 @@ class Person(models.Model):
 
 class Start(models.Model):
     order = models.IntegerField("Reihenfolge")
-    people = models.ManyToManyField(Person)
+    people = models.ManyToManyField(Person, blank=True)
     competition = models.ForeignKey(Competition, on_delete=models.PROTECT)
-    info = models.CharField("Zusatzinfo", max_length=255)
+    info = models.JSONField(default=dict())
     time = models.DateTimeField("Zeit des Starts")
     isActive = models.BooleanField("Started?", default=True)
 
     def competitors_names(self):
         people = self.people.all()
+        if 'cnt' in self.info:
+            return str(self.info['cnt'])+' Fahrer'
         if len(people) > 2:
             return str(len(people))+' Fahrer'
         return " und ".join(str(x) for x in people)
@@ -92,10 +94,10 @@ class Start(models.Model):
         for x in self.people.all():
             if not x.club in clubs:
                 clubs = clubs+", "+x.club
-        return clubs[2:]
+        return self.info['club'] if 'club' in self.info else clubs[2:]
 
     def __str__(self):
-        return str(self.order) + '# ' + self.info
+        return str(self.order) + '# ' + self.info['titel']
 
 
 def generate_code():

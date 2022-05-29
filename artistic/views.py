@@ -259,12 +259,22 @@ def read_csv(request):
             data[7] = data[7].strip()
             data[2] = data[2].strip()
             if not re.match("^[0-9]{1,2}:[0-9]{2}$", data[7]) or not data[2].isnumeric():
-                messages.warning(request, data[2]+'# Start: '+data[0])
+                messages.warning(request, data[2]+'# Start: '+data[4])
                 continue
-            s = Start(order=data[2], competition=c, info=data[4].strip(), time=datetime.strptime('22-05-2022 '+data[7], '%d-%m-%Y %H:%M'))
-            s.save()
+            s = Start(order=data[2], competition=c, info={'titel': data[4].strip()}, time=datetime.strptime('22-05-2022 '+data[7], '%d-%m-%Y %H:%M'))
+            if int(data[1]) > 2:
+                s.info['cnt'] = int(data[1])
+                s.info['club'] = data[6].strip()
+                s.save()
+                text += s.order + '# ' + s.info['titel'] + '\r\n'
+                continue
+
             # anlegen Personen
             people = data[5].split(' & ' if '&' in data[5] else ' und ')
+            if len(people) != int(data[1]):
+                messages.warning(request, data[2]+'# Fahreranzahl: '+data[4])
+                continue
+            s.save()
             for person in people:
                 club = data[6].split('/')[people.index(person)].strip() if len(people) > 1 and '/' in data[6] else data[6].strip()
                 person = person.split(' ', 1)
@@ -272,9 +282,9 @@ def read_csv(request):
                     p = Person.objects.get(firstname=person[0].strip(), lastname=person[1].strip(), event=e)
                 except Person.DoesNotExist:
                     p = Person(firstname=person[0].strip(), lastname=person[1].strip(), gender='d', email='', club=club, dateofbirth=datetime.strptime('0', '%H'), event=e)
-                p.save()
+                    p.save()
                 s.people.add(p)
-            text += s.order + '# ' + s.info + '\r\n'
+            text += s.order + '# ' + s.info['titel'] + '\r\n'
 
     return render(request, "artistic/import.html", {
         'text': text
@@ -328,7 +338,7 @@ def displayPushPull(request):
         send.append({
             'strnbr': start.order,
             'actors': start.competitors_names(),
-            'titel': start.info,
+            'titel': start.info['titel'],
             'club': start.competitors_clubs(),
             'cat': start.competition.name,
             'time': start.time.strftime("%H:%M"),

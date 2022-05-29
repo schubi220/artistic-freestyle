@@ -37,7 +37,7 @@
           {% for cnt in result.place %}
             {% with start=starts|return_item:cnt %}
             <tr{% if not start.isActive %} class="canceled"{% endif %}>
-              <td>{{ start.info }}</td>
+              <td>{{ start.info.titel }}</td>
               <td>{{ start.competitors_names }}</td>
               <td>{{ start.competitors_clubs }}</td>
               {% for jtype in judgetypes %}
@@ -76,7 +76,7 @@
               <td>{{ start.order }}</td>
               <td>{{ start.competitors_names }}</td>
               <td>{{ start.competitors_clubs }}</td>
-              <td>{{ start.info }}</td>
+              <td>{{ start.info.titel }}</td>
               <td></td>
               <td>{{ result.full|return_item:start.id|percent:2 }}</td>
               {% for jtype in judgetypes %}
@@ -118,7 +118,7 @@
               <td>{{ start.order }}</td>
               <td>{{ start.competitors_names }}</td>
               <td>{{ start.competitors_clubs }}</td>
-              <td>{{ start.info }}</td>
+              <td>{{ start.info.titel }}</td>
               <td>{{ result|return_item:jtype|return_item:start.id }}</td>
               {% for judge in judges %}{% if judge.type == jtype %}
                 {% with v=values|return_item:judge.possition %}
@@ -157,7 +157,7 @@
               <td>{{ start.order }}</td>
               <td>{{ start.competitors_names }}</td>
               <td>{{ start.competitors_clubs }}</td>
-              <td>{{ start.info }}</td>
+              <td>{{ start.info.titel }}</td>
               <td>{{ result|return_item:jtype|return_item:start.id|percent:2 }}</td>
               {% for judge in judges %}{% if judge.type == jtype %}
                 {% with v=values|return_item:judge.possition %}

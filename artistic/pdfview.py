@@ -19,14 +19,12 @@ def pdfdetail(context):
     for jtype in context['judgetypes']:
         pagecontext.append(Paragraph([i[1] for i in Judge.JUDGETYPE_CHOICES if i[0] == jtype][0], sample_style_sheet['Heading2']))
         data =[]
-        #row = ['#', 'Name', 'Verein', 'Titel', 'Gesamt']
         row = ['#', 'Name', 'Verein']
         row.append(jtype)
         for judge in context['judges']:
             if judge.type == jtype:
                 row.append(judge.possition)
                 row.append('')
-                #row.append('')
                 row.append('1')
                 row.append('2')
                 row.append('3')
@@ -37,14 +35,11 @@ def pdfdetail(context):
             row.append(start.order)
             row.append(start.competitors_names()[0:32])
             row.append(start.competitors_clubs()[0:18])
-            #row.append(start.info)
-#            row.append(f"{context['result']['full'][start.id] * 100.0:.{2}f}%")
             row.append(f"{context['result'][jtype][start.id] * 100.0:.{2}f}%")
             for judge in context['judges']:
                 if judge.type == jtype:
                     row.append(context['values'][judge.possition][start.id].values['place'])
                     row.append(f"{context['values'][judge.possition][start.id].values['result'] * 100.0:.{2}f}%")
-                    #row.append(context['values'][judge.possition][start.id].values['summe'])
                     row.append(context['values'][judge.possition][start.id].values.get('0'))
                     row.append(context['values'][judge.possition][start.id].values.get('1'))
                     row.append(context['values'][judge.possition][start.id].values.get('2'))
@@ -61,7 +56,6 @@ def pdfdetail(context):
 #    pagecontext.append(PageBreak())
     pagecontext.append(Paragraph("Gesamt", sample_style_sheet['Heading2']))
     data =[]
-    #row = ['#', 'Name', 'Verein', 'Titel', 'Gesamt']
     row = ['#', 'Name', 'Verein', 'Gesamt']
     for jtype in context['judgetypes']:
         row.append(jtype)
@@ -75,7 +69,6 @@ def pdfdetail(context):
         row.append(start.order)
         row.append(start.competitors_names()[0:32])
         row.append(start.competitors_clubs()[0:18])
-        #row.append(start.info)
         row.append(f"{context['result']['full'][start.id] * 100.0:.{2}f}%")
         for jtype in context['judgetypes']:
             row.append(f"{context['result'][jtype][start.id] * 100.0:.{2}f}%")
@@ -143,7 +136,7 @@ def pdfresult(context):
         row.append(context['result']['place'][cnt])
         row.append(Paragraph(start.competitors_names(), sample_style_sheet['Normal']))
         row.append(Paragraph(start.competitors_clubs(), sample_style_sheet['Normal']))
-        row.append(Paragraph(start.info, sample_style_sheet['Normal']))
+        row.append(Paragraph(start.info['titel'], sample_style_sheet['Normal']))
         for jtype in context['judgetypes']:
             row.append(f"{context['result'][jtype][start.id] * 100.0:.{2}f}%")
         row.append(f"{context['result']['full'][start.id] * 100.0:.{2}f}%")
@@ -204,7 +197,7 @@ def pdfcertificate(context):
         c.drawCentredString(297.637795276,650, f"{context['result']['full'][start.id] * 100.0:.{2}f}%")
         c.drawCentredString(297.637795276,600, start.competitors_names())
         c.drawCentredString(297.637795276,550, start.competitors_clubs())
-        c.drawCentredString(297.637795276,500, start.info)
+        c.drawCentredString(297.637795276,500, start.info['titel'])
         c.showPage()
 
     c.save()
@@ -246,11 +239,11 @@ def pdfinputT(c, judge, starts, page):
             c.drawString(12*mm, (y+40)*mm, start.competitors_names()[0:24])
         c.line(12*mm, (y+39)*mm, 55*mm, (y+39)*mm)
         c.drawString(12*mm, (y+29)*mm, 'Kürtitel:')
-        if len(start.info) > 24:
-            c.drawString(12*mm, (y+23)*mm, start.info[0:24])
-            c.drawString(12*mm, (y+20)*mm, start.info[24:50])
+        if len(start.info['titel']) > 24:
+            c.drawString(12*mm, (y+23)*mm, start.info['titel'][0:24])
+            c.drawString(12*mm, (y+20)*mm, start.info['titel'][24:50])
         else:
-            c.drawString(12*mm, (y+20)*mm, start.info[0:24])
+            c.drawString(12*mm, (y+20)*mm, start.info['titel'][0:24])
         c.line(12*mm, (y+19)*mm, 55*mm, (y+19)*mm)
 
         c.setFillColorRGB(0.88,0.94,0.85)
@@ -356,11 +349,11 @@ def pdfinputP(c, judge, starts, page):
             c.drawString(12*mm, (y+40)*mm, start.competitors_names()[0:24])
         c.line(12*mm, (y+39)*mm, 55*mm, (y+39)*mm)
         c.drawString(12*mm, (y+29)*mm, 'Kürtitel:')
-        if len(start.info) > 24:
-            c.drawString(12*mm, (y+23)*mm, start.info[0:24])
-            c.drawString(12*mm, (y+20)*mm, start.info[24:50])
+        if len(start.info['titel']) > 24:
+            c.drawString(12*mm, (y+23)*mm, start.info['titel'][0:24])
+            c.drawString(12*mm, (y+20)*mm, start.info['titel'][24:50])
         else:
-            c.drawString(12*mm, (y+20)*mm, start.info[0:24])
+            c.drawString(12*mm, (y+20)*mm, start.info['titel'][0:24])
         c.line(12*mm, (y+19)*mm, 55*mm, (y+19)*mm)
 
         c.setFillColorRGB(0.87,0.92,0.97)
@@ -446,11 +439,11 @@ def pdfinputD(c, judge, starts, page):
             c.drawString(12*mm, (y+40)*mm, start.competitors_names()[0:24])
         c.line(12*mm, (y+39)*mm, 55*mm, (y+39)*mm)
         c.drawString(12*mm, (y+29)*mm, 'Kürtitel:')
-        if len(start.info) > 24:
-            c.drawString(12*mm, (y+23)*mm, start.info[0:24])
-            c.drawString(12*mm, (y+20)*mm, start.info[24:50])
+        if len(start.info['titel']) > 24:
+            c.drawString(12*mm, (y+23)*mm, start.info['titel'][0:24])
+            c.drawString(12*mm, (y+20)*mm, start.info['titel'][24:50])
         else:
-            c.drawString(12*mm, (y+20)*mm, start.info[0:24])
+            c.drawString(12*mm, (y+20)*mm, start.info['titel'][0:24])
         c.line(12*mm, (y+19)*mm, 55*mm, (y+19)*mm)
 
         c.setFillColorRGB(1,0.94,0.8)
