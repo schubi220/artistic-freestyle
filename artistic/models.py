@@ -83,7 +83,10 @@ class Start(models.Model):
     isActive = models.BooleanField("Started?", default=True)
 
     def competitors_names(self):
-        return ", ".join(str(x) for x in self.people.all())
+        people = self.people.all()
+        if len(people) > 2:
+            return str(len(people))+' Fahrer'
+        return " und ".join(str(x) for x in people)
     def competitors_clubs(self):
         clubs = ""
         for x in self.people.all():

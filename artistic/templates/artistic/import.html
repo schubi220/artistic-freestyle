@@ -1,0 +1,14 @@
+ {% extends "base.html" %}
+
+ {% block body %}
+<div class="container">
+  <form action="{% url 'artistic:import' %}" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="exampleFormControlTextarea1">Example textarea</label>
+      <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="csvfile">{{ text }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+{% endblock %}

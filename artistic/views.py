@@ -1,10 +1,12 @@
 from django.shortcuts import render
-from artistic.models import Judge, Start, Value, Competition, Config, Event
+from artistic.models import Judge, Start, Value, Competition, Config, Event, Person
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.urls import reverse
 from django.contrib import messages
 from artistic import resultworker, pdfview
 from django.conf import settings
+from datetime import datetime
+import re
 
 # Create your views here.
 
@@ -240,28 +242,39 @@ def read_csv(request):
         for row in csvfile.splitlines():
             data = row.split('\t')
 
-            if data[0] != 'x' and data[0] != 'X' and data[0] != '':
+            if data[0] == 'x' or data[0] == 'X' or not data[0].strip():
+                continue
 
-                # anlegen Altersklasse
+            # anlegen Altersklasse
+            data[0] = data[0].strip()
+            try:
+                c = Competition.objects.get(name__iexact=data[0])
+            except Competition.DoesNotExist:
+                if not 0 < len(data[0]) <= 100:
+                    messages.warning(request, data[2]+'# Altersklasse: '+data[0])
+                    continue
+                c = Competition(name=data[0], minAge=0, maxAge=0, discipline="FA", event=e)
+                c.save()
+            # anlegen des Starts
+            data[7] = data[7].strip()
+            data[2] = data[2].strip()
+            if not re.match("^[0-9]{1,2}:[0-9]{2}$", data[7]) or not data[2].isnumeric():
+                messages.warning(request, data[2]+'# Start: '+data[0])
+                continue
+            s = Start(order=data[2], competition=c, info=data[4].strip(), time=datetime.strptime('22-05-2022 '+data[7], '%d-%m-%Y %H:%M'))
+            s.save()
+            # anlegen Personen
+            people = data[5].split(' & ' if '&' in data[5] else ' und ')
+            for person in people:
+                club = data[6].split('/')[people.index(person)].strip() if len(people) > 1 and '/' in data[6] else data[6].strip()
+                person = person.split(' ', 1)
                 try:
-                    c = Competition.objects.get(name__iexact=data[0])
-                except Competition.DoesNotExist:
-                    c = Competition(name=data[0], minAge=0, maxAge=0, discipline="FA", event=e)
-                    c.save()
-                # anlegen des Starts
-                s = Start(order=data[2], competition=c, info=data[4], time=datetime.strptime('22-05-2022 '+data[7], '%d-%m-%Y %H:%M'))
-                s.save()
-
-                for person in data[5].split(' und '):
-                    person = person.split(' ', 1)
-                    try:
-                        p = Person.objects.get(firstname=person[0], lastname=person[1], event=e)
-                    except Person.DoesNotExist:
-                        p = Person(firstname=person[0], lastname=person[1], gender='d', email='', club=data[6], dateofbirth=datetime.strptime('0', '%H'), event=e)
-                    p.save()
-                    s.people.add(p)
-
-                text += s.order + '# ' + s.info + '\r\n'
+                    p = Person.objects.get(firstname=person[0].strip(), lastname=person[1].strip(), event=e)
+                except Person.DoesNotExist:
+                    p = Person(firstname=person[0].strip(), lastname=person[1].strip(), gender='d', email='', club=club, dateofbirth=datetime.strptime('0', '%H'), event=e)
+                p.save()
+                s.people.add(p)
+            text += s.order + '# ' + s.info + '\r\n'
 
     return render(request, "artistic/import.html", {
         'text': text
