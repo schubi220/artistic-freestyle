@@ -239,10 +239,18 @@ def pdfinputT(c, judge, starts, page):
         c.setLineWidth(1)
         c.setFont('Helvetica', 10)
         c.drawString(12*mm, (y+49)*mm, 'Name:')
-        c.drawString(12*mm, (y+40)*mm, start.competitors_names())
+        if len(start.competitors_names()) > 24:
+            c.drawString(12*mm, (y+43)*mm, start.competitors_names()[0:24])
+            c.drawString(12*mm, (y+40)*mm, start.competitors_names()[24:50])
+        else:
+            c.drawString(12*mm, (y+40)*mm, start.competitors_names()[0:24])
         c.line(12*mm, (y+39)*mm, 55*mm, (y+39)*mm)
         c.drawString(12*mm, (y+29)*mm, 'Kürtitel:')
-        c.drawString(12*mm, (y+20)*mm, start.info)
+        if len(start.info) > 24:
+            c.drawString(12*mm, (y+23)*mm, start.info[0:24])
+            c.drawString(12*mm, (y+20)*mm, start.info[24:50])
+        else:
+            c.drawString(12*mm, (y+20)*mm, start.info[0:24])
         c.line(12*mm, (y+19)*mm, 55*mm, (y+19)*mm)
 
         c.setFillColorRGB(0.88,0.94,0.85)
@@ -341,10 +349,18 @@ def pdfinputP(c, judge, starts, page):
         c.setLineWidth(1)
         c.setFont('Helvetica', 10)
         c.drawString(12*mm, (y+49)*mm, 'Name:')
-        c.drawString(12*mm, (y+40)*mm, start.competitors_names())
+        if len(start.competitors_names()) > 24:
+            c.drawString(12*mm, (y+43)*mm, start.competitors_names()[0:24])
+            c.drawString(12*mm, (y+40)*mm, start.competitors_names()[24:50])
+        else:
+            c.drawString(12*mm, (y+40)*mm, start.competitors_names()[0:24])
         c.line(12*mm, (y+39)*mm, 55*mm, (y+39)*mm)
         c.drawString(12*mm, (y+29)*mm, 'Kürtitel:')
-        c.drawString(12*mm, (y+20)*mm, start.info)
+        if len(start.info) > 24:
+            c.drawString(12*mm, (y+23)*mm, start.info[0:24])
+            c.drawString(12*mm, (y+20)*mm, start.info[24:50])
+        else:
+            c.drawString(12*mm, (y+20)*mm, start.info[0:24])
         c.line(12*mm, (y+19)*mm, 55*mm, (y+19)*mm)
 
         c.setFillColorRGB(0.87,0.92,0.97)
@@ -423,10 +439,18 @@ def pdfinputD(c, judge, starts, page):
         c.setLineWidth(1)
         c.setFont('Helvetica', 10)
         c.drawString(12*mm, (y+49)*mm, 'Name:')
-        c.drawString(12*mm, (y+40)*mm, start.competitors_names())
+        if len(start.competitors_names()) > 24:
+            c.drawString(12*mm, (y+43)*mm, start.competitors_names()[0:24])
+            c.drawString(12*mm, (y+40)*mm, start.competitors_names()[24:50])
+        else:
+            c.drawString(12*mm, (y+40)*mm, start.competitors_names()[0:24])
         c.line(12*mm, (y+39)*mm, 55*mm, (y+39)*mm)
         c.drawString(12*mm, (y+29)*mm, 'Kürtitel:')
-        c.drawString(12*mm, (y+20)*mm, start.info)
+        if len(start.info) > 24:
+            c.drawString(12*mm, (y+23)*mm, start.info[0:24])
+            c.drawString(12*mm, (y+20)*mm, start.info[24:50])
+        else:
+            c.drawString(12*mm, (y+20)*mm, start.info[0:24])
         c.line(12*mm, (y+19)*mm, 55*mm, (y+19)*mm)
 
         c.setFillColorRGB(1,0.94,0.8)
