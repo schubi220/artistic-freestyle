@@ -44,7 +44,6 @@ def input(request):
             val = {}
             for i in [0,1,2]:
                 v = request.POST.get(str(start.id)+'v'+str(i), '').replace(',', '.')
-                #print(str(start.id)+'v'+str(i)+' : '+v)
                 try:
                     val[i] = float(v)
                 except:
@@ -179,7 +178,6 @@ def rate(request):
         result['full'][start.id] = round(result['T'][start.id]*0.45 + result['P'][start.id]*0.45 + result['D'][start.id]*0.1, 4)
         a = str(round(result['T'][start.id], 4))[2:]
         a = str(result['full'][start.id])+a
-        print(a)
         while a in sort:
             a += '0'
             same[a] = 0
@@ -218,7 +216,7 @@ def wrappdf(request, filename):
         return HttpResponseNotFound('<h1>File not exist</h1>')
     c = Competition.objects.get(id=request.session.get('actcompetition'))
 
-    file_location = str(settings.BASE_DIR) + '/tmp/'+filename+'.pdf'
+    file_location = str(settings.BASE_DIR) + '/tmp/pdf'+filename+'.pdf'
 
     #    try:
     response = HttpResponse(open(file_location, 'rb'), content_type='application/pdf')

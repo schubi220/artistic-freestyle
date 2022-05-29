@@ -5,6 +5,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfgen import canvas
+from artistic.models import Judge
 import math
 import datetime
 
@@ -12,10 +13,11 @@ def pdfdetail(context):
     c = SimpleDocTemplate(str(settings.BASE_DIR) + '/tmp/pdfdetail.pdf', pagesize=landscape(A3), rightMargin=56, leftMargin=56, topMargin=56, bottomMargin=56)
     pagecontext = []
     sample_style_sheet = getSampleStyleSheet()
-    sample_style_sheet['Heading1'].spaceBefore = 25
+    pagecontext.append(Paragraph(context['competiton'].name, sample_style_sheet['Heading1']))
+    sample_style_sheet['Heading2'].spaceBefore = 25
 
     for jtype in context['judgetypes']:
-        pagecontext.append(Paragraph(jtype, sample_style_sheet['Heading1']))
+        pagecontext.append(Paragraph([i[1] for i in Judge.JUDGETYPE_CHOICES if i[0] == jtype][0], sample_style_sheet['Heading2']))
         data =[]
         #row = ['#', 'Name', 'Verein', 'Titel', 'Gesamt']
         row = ['#', 'Name', 'Verein']
@@ -57,7 +59,7 @@ def pdfdetail(context):
         pagecontext.append(t)
 
 #    pagecontext.append(PageBreak())
-    pagecontext.append(Paragraph("Gesamt", sample_style_sheet['Heading1']))
+    pagecontext.append(Paragraph("Gesamt", sample_style_sheet['Heading2']))
     data =[]
     #row = ['#', 'Name', 'Verein', 'Titel', 'Gesamt']
     row = ['#', 'Name', 'Verein', 'Gesamt']
@@ -90,8 +92,7 @@ def pdfdetail(context):
     ]))
     pagecontext.append(t)
 
-    c.build(pagecontext)
-    #c.multiBuild(pagecontext, canvasmaker=FooterDetail)
+    c.multiBuild(pagecontext, canvasmaker=FooterDetail)
 
 class FooterDetail(canvas.Canvas):
     def __init__(self, *args, **kwargs):
@@ -112,10 +113,11 @@ class FooterDetail(canvas.Canvas):
 
     def draw_canvas(self, page_count):
         self.saveState()
+        self.setLineWidth(0.25)
+        self.line(595.275590551, 841.8897637795277, 595.275590551, 826.8897637795277)
         self.setStrokeColorRGB(0, 0, 0)
         self.setFont("Helvetica", 6)
-        self.drawString(20, 25, 'Altersklasse: ')
-        self.drawCentredString(575.2755905511812, 25, "Seite %s von %s" % (self._pageNumber, page_count))
+        self.drawString(20, 25, "Seite %s von %s" % (self._pageNumber, page_count))
         self.drawRightString(1150.551181102, 25, 'Ergebnis vom: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
         self.restoreState()
 
@@ -176,7 +178,8 @@ class FooterResult(canvas.Canvas):
 
     def draw_canvas(self, page_count):
         self.saveState()
-        self.line(0, 420.94488189, 20, 420.94488189)
+        self.setLineWidth(0.25)
+        self.line(0, 420.94488189, 15, 420.94488189)
         self.setStrokeColorRGB(0, 0, 0)
         self.setFont("Helvetica", 6)
         self.drawString(20, 25, "Seite %s von %s" % (self._pageNumber, page_count))
@@ -212,13 +215,14 @@ def pdfinput(context):
     cnt = math.ceil(context['starts'].count()/3)
     for judge in context['judges']:
         for i in range(cnt):
-            globals()['pdfinput' + judge.type](c, judge, context['starts'][(i*3):(i*3+3)], i)
+            globals()['pdfinput' + judge.type](c, judge, context['starts'][(i*3):(i*3+3)], [i, cnt])
             c.showPage()
 
     c.save()
 
 def pdfinputT(c, judge, starts, page):
-    c.line(420.94488189, 595.275590551181, 420.94488189, 575.275590551181)
+    c.setLineWidth(0.25)
+    c.line(420.94488189, 595.275590551181, 420.94488189, 580.275590551181)
     c.setFont('Helvetica-Bold', 14)
     c.drawString(9*mm, 200*mm, 'Technik')
     c.setFont('Helvetica', 10)
@@ -314,13 +318,12 @@ def pdfinputT(c, judge, starts, page):
         c.rect(253*mm, (y+4)*mm, 27*mm, 10*mm)
         c.setStrokeColorRGB(0,0,0)
 
-
-    c.setFont('Helvetica', 4)
-    c.drawString(16*mm, 16*mm, 'Seite: '+str(page+1))
-    c.drawString(260*mm, 16*mm, '© Nina Herzog / Januar 2018')
+    c.setFont('Helvetica', 6)
+    c.drawCentredString(420.94488189, 20, 'Seite: '+str(page[0]+1)+' von '+str(page[1]))
 
 def pdfinputP(c, judge, starts, page):
-    c.line(420.94488189, 595.275590551181, 420.94488189, 575.275590551181)
+    c.setLineWidth(0.25)
+    c.line(420.94488189, 595.275590551181, 420.94488189, 580.275590551181)
     c.setFont('Helvetica-Bold', 14)
     c.drawString(9*mm, 200*mm, 'Performance')
     c.setFont('Helvetica', 10)
@@ -397,13 +400,12 @@ def pdfinputP(c, judge, starts, page):
         c.rect(253*mm, (y+4)*mm, 27*mm, 10*mm)
         c.setStrokeColorRGB(0,0,0)
 
-
-    c.setFont('Helvetica', 4)
-    c.drawString(16*mm, 16*mm, 'Seite: '+str(page+1))
-    c.drawString(260*mm, 16*mm, '© Nina Herzog / Januar 2018')
+    c.setFont('Helvetica', 6)
+    c.drawCentredString(420.94488189, 20, 'Seite: '+str(page[0]+1)+' von '+str(page[1]))
 
 def pdfinputD(c, judge, starts, page):
-    c.line(420.94488189, 595.275590551181, 420.94488189, 575.275590551181)
+    c.setLineWidth(0.25)
+    c.line(420.94488189, 595.275590551181, 420.94488189, 580.275590551181)
     c.setFont('Helvetica-Bold', 14)
     c.drawString(9*mm, 200*mm, 'Abstiege')
     c.setFont('Helvetica', 10)
@@ -463,7 +465,5 @@ def pdfinputD(c, judge, starts, page):
         c.drawString(246*mm, (y+9)*mm, '=')
         c.rect(252*mm, (y+4)*mm, 27*mm, 14*mm)
 
-
-    c.setFont('Helvetica', 4)
-    c.drawString(16*mm, 16*mm, 'Seite: '+str(page+1))
-    c.drawString(260*mm, 16*mm, '© Nina Herzog / Januar 2018')
+    c.setFont('Helvetica', 6)
+    c.drawCentredString(420.94488189, 20, 'Seite: '+str(page[0]+1)+' von '+str(page[1]))

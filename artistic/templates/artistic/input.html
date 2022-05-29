@@ -13,17 +13,17 @@
           <th>Verein</th>
           <th>Titel</th>
           {% if judge.type == 'T' %}
-            <th>Quantity of Unicycling Skills and Transitins</th>
-            <th>Mastery And Quality of Execution</th>
-            <th>Difficulty And Duration</th>
+            <th>Anzahl</th>
+            <th>Schwierigkeit</th>
+            <th>Sicherheit / Qualität</th>
           {% elif judge.type == 'P' %}
-            <th>Presence/Execution</th>
-            <th>Composition/Choreography</th>
-            <th>Interpretation of the Music/Timing</th>
+            <th>Präsenz / Bewegungsausführung</th>
+            <th>Komposition / Choreographie</th>
+            <th>Interpretation der Musik / Timing</th>
           {% elif judge.type == 'D' %}
-            <th>Minor Dismounts</th>
-            <th>Major Dismounts</th>
-            <th>Number of Riders</th>
+            <th>Anzahl leichte Abstiege</th>
+            <th>Anzahl schwere Abstiege</th>
+            <th>Anzahl der Fahrer</th>
           {% endif %}
           <th colspan="3">Ergebniss</th>
         </tr>
