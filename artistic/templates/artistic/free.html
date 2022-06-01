@@ -10,7 +10,7 @@
       {% endfor %}
     </select>
 
-    <a class="btn btn-sm btn-primary" href="{% url 'artistic:inputpdf' %}" target="_blank"">Wertungsbögen</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'artistic:inputpdf' %}" target="_blank">Wertungsbögen</a>
 
     {% if judges %}
       <table class="table">
@@ -37,6 +37,7 @@
                   <button type="submit" name="judgeid" value="{{ judge.id }}" class="btn btn-sm btn-danger">Sperren</button>
                 {% endif %}
                 <button type="submit" name="judgecorrect" value="{{ judge.id }}" class="btn btn-sm btn-primary">Wertung bearbeiten</button>
+                <a class="btn btn-sm btn-secondary" href="{% url 'admin:artistic_judge_change' judge.id %}?next={{ request.path }}">bearbeiten</a>
               </td>
             </tr>
           {% endfor %}

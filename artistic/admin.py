@@ -1,5 +1,5 @@
 from django.contrib import admin
-
+from django.http import HttpResponseRedirect
 from artistic.models import Event, Competition, Person, Start, Judge
 
 class EventAdmin(admin.ModelAdmin):
@@ -23,6 +23,7 @@ class CompetitionAdmin(admin.ModelAdmin):
 
 
 class PersonAdmin(admin.ModelAdmin):
+    ordering = ['firstname', 'lastname']
     fieldsets = (
         ('Persönliche Daten', {'fields': (('firstname', 'lastname', 'gender'), ('email', 'club'), 'dateofbirth')}),
         ('Anschrift', {'fields': ('street', ('postcode', 'city'), 'country')}),
@@ -34,23 +35,39 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 class StartAdmin(admin.ModelAdmin):
+    ordering = ['time', 'competition', 'order']
     fieldsets = (
         (None, {'fields': ('order', 'people', 'competition', 'info', ('time', 'isActive'))}),
     )
-    list_display = ('order', 'competitors_names', 'info', 'competition', 'time', 'isActive')
+    list_display = ('order', 'competitors_names', 'competitors_clubs', 'get_titel', 'competition', 'time', 'isActive')
     list_filter = ['competition']
+    date_hierarchy = 'time'
 
     def competitors_names(self, inst):
-        return ", ".join(str(x) for x in inst.people.all())
-    competitors_names.short_description = 'Teilnehmer'
+        return inst.competitors_names()
+    competitors_names.short_description = 'Name'
+    def competitors_clubs(self, inst):
+        return inst.competitors_clubs()
+    competitors_clubs.short_description = 'Verein'
+    def get_titel(self, inst):
+        return inst.info['titel']
+    get_titel.short_description = 'Titel'
 
 
 class JudgeAdmin(admin.ModelAdmin):
+    ordering = ['competition', 'possition']
     fieldsets = (
         (None, {'fields': ('name', ('possition', 'type'), 'competition', ('code', 'isActive'))}),
     )
     list_display = ('possition', 'name', 'type', 'competition', 'isActive')
     list_filter = ['competition']
+
+    def response_post_save_change(self, request, obj):
+        res = super().response_post_save_change(request, obj)
+        if "next" in request.GET:
+            return HttpResponseRedirect(request.GET['next'])
+        else:
+            return res
 
 
 admin.site.register(Event, EventAdmin)
