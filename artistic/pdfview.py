@@ -102,7 +102,7 @@ class FooterDetail(canvas.Canvas):
             self.__dict__.update(page)
             self.draw_canvas(page_count)
             canvas.Canvas.showPage(self)
-            canvas.Canvas.save(self)
+        canvas.Canvas.save(self)
 
     def draw_canvas(self, page_count):
         self.saveState()
@@ -167,7 +167,7 @@ class FooterResult(canvas.Canvas):
             self.__dict__.update(page)
             self.draw_canvas(page_count)
             canvas.Canvas.showPage(self)
-            canvas.Canvas.save(self)
+        canvas.Canvas.save(self)
 
     def draw_canvas(self, page_count):
         self.saveState()
