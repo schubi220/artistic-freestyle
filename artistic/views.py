@@ -234,34 +234,35 @@ def read_csv(request):
         return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
 
     csvfile = request.POST.get('csvfile', False)
+    date = request.POST.get('date')
     text = ''
 
-    e = Event.objects.get(id=Config.objects.get(key='event_id').value)
+    try:
+        e = Event.objects.get(id=Config.objects.get(key='event_id').value)
+    except Event.DoesNotExist:
+        messages.warning(request, 'Keine Veranstaltung vorhanden.')
+        return HttpResponseRedirect(reverse('admin:artistic_event_add'))
 
-    if csvfile:
+    if csvfile and re.match("^[0-9]{2}.[0-9]{2}.[0-9]{4}$", date):
         for row in csvfile.splitlines():
             data = row.split('\t')
-
-            if data[0] == 'x' or data[0] == 'X' or not data[0].strip():
+            data[0] = data[0].strip()
+            if data[0] == 'x' or data[0] == 'X':
                 continue
 
             # anlegen Altersklasse
-            data[0] = data[0].strip()
-            try:
-                c = Competition.objects.get(name__iexact=data[0])
-            except Competition.DoesNotExist:
-                if not 0 < len(data[0]) <= 100:
-                    messages.warning(request, data[2]+'# Altersklasse: '+data[0])
-                    continue
-                c = Competition(name=data[0], minAge=0, maxAge=0, discipline="FA", event=e)
-                c.save()
+            if not data[0] or 99 < len(data[0]):
+                messages.warning(request, data[2]+'# Altersklasse: '+data[0])
+                continue
+            c, created = Competition.objects.get_or_create(name__iexact=data[0], defaults={'name':data[0], 'minAge':0, 'maxAge':0, 'discipline':"FA", 'event':e})
+
             # anlegen des Starts
-            data[7] = data[7].strip()
+            data[7] = date+' '+data[7].strip()
             data[2] = data[2].strip()
-            if not re.match("^[0-9]{1,2}:[0-9]{2}$", data[7]) or not data[2].isnumeric():
+            if not re.match("^[0-9]{2}.[0-9]{2}.[0-9]{4} [0-9]{1,2}:[0-9]{2}$", data[7]) or not data[2].isnumeric():
                 messages.warning(request, data[2]+'# Start: '+data[4])
                 continue
-            s = Start(order=data[2], competition=c, info={'titel': data[4].strip()}, time=datetime.strptime('22-05-2022 '+data[7], '%d-%m-%Y %H:%M'))
+            s = Start(order=data[2], competition=c, info={'titel': data[4].strip()}, time=datetime.strptime(data[7], '%d.%m.%Y %H:%M'))
             if int(data[1]) > 2:
                 s.info['cnt'] = int(data[1])
                 s.info['club'] = data[6].strip()
@@ -271,23 +272,20 @@ def read_csv(request):
 
             # anlegen Personen
             people = data[5].split(' & ' if '&' in data[5] else ' und ')
-            if len(people) != int(data[1]):
+            if len(people) != int(data[1]) or not data[5].strip():
                 messages.warning(request, data[2]+'# Fahreranzahl: '+data[4])
                 continue
             s.save()
             for person in people:
                 club = data[6].split('/')[people.index(person)].strip() if len(people) > 1 and '/' in data[6] else data[6].strip()
                 person = person.split(' ', 1)
-                try:
-                    p = Person.objects.get(firstname=person[0].strip(), lastname=person[1].strip(), event=e)
-                except Person.DoesNotExist:
-                    p = Person(firstname=person[0].strip(), lastname=person[1].strip(), gender='d', email='', club=club, dateofbirth=datetime.strptime('0', '%H'), event=e)
-                    p.save()
+                p, created = Person.objects.get_or_create(firstname=person[0].strip(), lastname=person[1].strip(), event=e, defaults={'gender':'d', 'club':club, 'dateofbirth':datetime.strptime('0', '%H')})
                 s.people.add(p)
             text += s.order + '# ' + s.info['titel'] + '\r\n'
 
     return render(request, "artistic/import.html", {
-        'text': text
+        'text': text,
+        'event': e,
     })
 
 

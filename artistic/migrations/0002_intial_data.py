@@ -7,7 +7,7 @@ def init_config(apps, schema_editor):
     Config = apps.get_model('artistic', 'Config')
     Config.objects.get_or_create(key='event_id', defaults={'value':1})
     Config.objects.get_or_create(key='comp_id', defaults={'value':1})
-    Config.objects.get_or_create(key='start_id', defaults={'value':1})
+    Config.objects.get_or_create(key='start_id', defaults={'value':"-1"})
 
 
 class Migration(migrations.Migration):

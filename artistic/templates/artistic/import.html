@@ -5,8 +5,12 @@
   <form action="{% url 'artistic:import' %}" method="post">
     {% csrf_token %}
     <div class="form-group">
-      <label for="exampleFormControlTextarea1">Example textarea</label>
-      <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="csvfile">{{ text }}</textarea>
+      <label for="startlist">Startliste</label>
+      <textarea class="form-control" id="startlist" rows="3" name="csvfile">{{ text }}</textarea>
+    </div>
+    <div class="form-group">
+      <label for="listdate">Tag</label>
+      <input class="form-control" id="listdate" name="date" value="{{ event.firstDay|date:"d.m.Y" }}" required>
     </div>
     <button type="submit" class="btn btn-primary">Submit</button>
   </form>
