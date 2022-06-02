@@ -93,8 +93,13 @@ def free(request):
     actcompetition = request.POST.get('actcompetition', False)
     if actcompetition:
         request.session['actcompetition'] = actcompetition
-
-    c = Competition.objects.get(id=request.session.get('actcompetition', Config.objects.get(key='comp_id').value))
+    try:
+        c = Competition.objects.get(id=request.session.get('actcompetition', Config.objects.get(key='comp_id').value), event__id=Config.objects.get(key='event_id').value)
+    except:
+        c = cl[0]
+        s = Config.objects.get(key='comp_id')
+        s.value = c.id
+        s.save()
 
     if request.POST.get('cntnew', False):
         for i in range(1, int(request.POST.get('cntnew'))+1):
@@ -304,10 +309,9 @@ def displaySettings(request):
         s.save()
 
     try:
-        c = Competition.objects.get(id=request.session.get('actcompetition'))
+        c = Competition.objects.get(id=request.session.get('actcompetition', Config.objects.get(key='comp_id').value))
     except:
-        messages.warning(request, 'Keine Altersklasse gewählt')
-        return HttpResponseRedirect(reverse('artistic:free'))
+        c = cl[0]
 
     cl = Competition.objects.filter(event__id=Config.objects.get(key='event_id').value)
     s = Start.objects.filter(competition=c).order_by('order')
