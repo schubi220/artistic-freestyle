@@ -76,7 +76,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('order', models.IntegerField(verbose_name='Reihenfolge')),
-                ('info', models.CharField(max_length=255, verbose_name='Zusatzinfo')),
+                ('info', models.JSONField(default={}, verbose_name='Zusatzinfo')),
                 ('time', models.DateTimeField(verbose_name='Zeit des Starts')),
                 ('isActive', models.BooleanField(default=True, verbose_name='Started?')),
                 ('competition', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='artistic.competition')),

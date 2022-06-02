@@ -94,7 +94,7 @@ def free(request):
     if actcompetition:
         request.session['actcompetition'] = actcompetition
 
-    c = Competition.objects.get(id=request.session.get('actcompetition', 1))
+    c = Competition.objects.get(id=request.session.get('actcompetition', Config.objects.get(key='comp_id').value))
 
     if request.POST.get('cntnew', False):
         for i in range(1, int(request.POST.get('cntnew'))+1):
@@ -301,7 +301,7 @@ def displaySettings(request):
 
     actstart = request.POST.get('actstart', False)
     if actstart:
-        s = Config.objects.get(key='act_start')
+        s = Config.objects.get(key='start_id')
         s.value = actstart
         s.save()
 
@@ -327,10 +327,10 @@ def displayMonitor(request):
     return render(request, "artistic/displayMonitor.html")
 
 def displayMode(request):
-    return HttpResponse(Config.objects.get(key='act_start').value)
+    return HttpResponse(Config.objects.get(key='start_id').value)
 
 def displayPushPull(request):
-    act = Config.objects.get(key='act_start').value
+    act = Config.objects.get(key='start_id').value
     s = Start.objects.filter(id__gte=act).order_by('time')[:10]
 
     send = []
