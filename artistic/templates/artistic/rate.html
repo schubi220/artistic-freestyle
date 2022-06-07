@@ -12,9 +12,10 @@
     <li class="nav-item"><a href="#tab{{ jtype }}1" class="nav-link" aria-controls="tab{{ jtype }}1" role="tab" data-toggle="tab">{{ jtype }} 1</a></li>
     <li class="nav-item"><a href="#tab{{ jtype }}2" class="nav-link" aria-controls="tab{{ jtype }}2" role="tab" data-toggle="tab">{{ jtype }} 2</a></li>
     {% endfor %}
-    <li class="nav-item"><a href="#pdfdetail" class="nav-link" aria-controls="pdfdetail" role="tab" data-toggle="tab">PDF Übersicht</a></li>
-    <li class="nav-item"><a href="#pdfresult" class="nav-link" aria-controls="pdfresult" role="tab" data-toggle="tab">PDF Aushang</a></li>
-    <li class="nav-item"><a href="#pdfcertificate" class="nav-link" aria-controls="pdfcertificate" role="tab" data-toggle="tab">PDF Urkunden</a></li>
+    <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'result' %}" class="nav-link" role="tab" target="_blank">PDF Aushang</a></li>
+    <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'detail' %}" class="nav-link" role="tab" target="_blank">PDF Übersicht</a></li>
+    <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'certificate' %}" class="nav-link" role="tab" target="_blank">PDF Urkunden</a></li>
+    <li class="nav-item"><a href="{% url 'artistic:select' %}" class="nav-link" role="tab">mehrere Alterklassen wählen</a></li>
   </ul>
   <div class="tab-content">
 
@@ -177,22 +178,6 @@
       </table>
     </div>
     {% endfor %}
-
-
-    <div role="tabpanel" class="tab-pane fade table-responsive" id="pdfdetail">
-      <iframe style="width: 297mm; height: 210mm;" src="{% url 'artistic:ratepdf' 'detail' %}"></iframe>
-    </div>
-
-
-    <div role="tabpanel" class="tab-pane fade table-responsive" id="pdfresult">
-      <iframe style="width: 297mm; height: 210mm;" src="{% url 'artistic:ratepdf' 'result' %}"></iframe>
-    </div>
-
-
-    <div role="tabpanel" class="tab-pane fade table-responsive" id="pdfcertificate">
-      <iframe style="width: 297mm; height: 210mm;" src="{% url 'artistic:ratepdf' 'certificate' %}"></iframe>
-    </div>
-
 
   </div>
 {% endblock %}

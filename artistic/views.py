@@ -7,6 +7,7 @@ from artistic import resultworker, pdfview
 from django.conf import settings
 from datetime import datetime
 import re
+from django.db.models import Q
 
 # Create your views here.
 
@@ -119,6 +120,7 @@ def free(request):
         'judges': j
     })
 
+
 def inputpdf(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
@@ -144,6 +146,17 @@ def inputpdf(request):
     return response
 
 
+def select(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+
+    cl = Competition.objects.filter(event__id=Config.objects.get(key='event_id').value)
+
+    return render(request, "artistic/select.html", {
+        'competitions': cl,
+    })
+
+
 def rate(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
@@ -154,7 +167,16 @@ def rate(request):
         messages.warning(request, 'Keine Altersklasse gewählt')
         return HttpResponseRedirect(reverse('artistic:free'))
 
-    s = Start.objects.filter(competition=c, isActive=True).order_by('order')
+    query = Q()
+    v = request.GET.getlist('cid')
+    if v:
+        for id in v:
+            query.add(Q(competition_id=id), Q.OR)
+        c.name = request.GET.get('cname', 'mehrere Altersklassen')
+    else:
+        query.add(Q(competition=c), Q.AND)
+    query.add(Q(isActive=True), Q.AND)
+    s = Start.objects.filter(query).order_by('order')
     j = Judge.objects.filter(competition=c)
 
     values = {}
@@ -257,7 +279,7 @@ def read_csv(request):
 
             # anlegen Altersklasse
             if not data[0] or 99 < len(data[0]):
-                messages.warning(request, data[2]+'# Altersklasse: '+data[0])
+                messages.warning(request, data[2]+'#'+data[4]+' Altersklasse: '+data[0])
                 continue
             c, created = Competition.objects.get_or_create(name__iexact=data[0], defaults={'name':data[0], 'minAge':0, 'maxAge':0, 'discipline':"FA", 'event':e})
 
@@ -278,7 +300,7 @@ def read_csv(request):
             # anlegen Personen
             people = data[5].split(' & ' if '&' in data[5] else ' und ')
             if len(people) != int(data[1]) or not data[5].strip():
-                messages.warning(request, data[2]+'# Fahreranzahl: '+data[4])
+                messages.warning(request, data[0]+'#'+data[2]+' Fahreranzahl: '+data[4])
                 continue
             s.save()
             for person in people:
