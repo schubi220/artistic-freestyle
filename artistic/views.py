@@ -76,6 +76,9 @@ def free(request):
         return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
 
     cl = Competition.objects.filter(event__id=Config.objects.get(key='event_id').value)
+    if not cl:
+        messages.warning(request, 'Keine Altersklasse vorhanden.')
+        return HttpResponseRedirect(reverse('admin:artistic_competition_add'))
 
     id = request.POST.get('judgeid', False)
     if id:
@@ -330,12 +333,16 @@ def displaySettings(request):
         s.value = actstart
         s.save()
 
+    cl = Competition.objects.filter(event__id=Config.objects.get(key='event_id').value)
+    if not cl:
+        messages.warning(request, 'Keine Altersklasse vorhanden.')
+        return HttpResponseRedirect(reverse('admin:artistic_competition_add'))
+
     try:
         c = Competition.objects.get(id=request.session.get('actcompetition', Config.objects.get(key='comp_id').value))
     except:
         c = cl[0]
 
-    cl = Competition.objects.filter(event__id=Config.objects.get(key='event_id').value)
     s = Start.objects.filter(competition=c).order_by('order')
 
     return render(request, "artistic/displaySettings.html", {
