@@ -12,6 +12,7 @@ urlpatterns = [
     path('rate', views.rate, name='rate'),
     re_path('rate/pdf/(?P<filename>(detail|result|certificate)).pdf', views.wrappdf, name='ratepdf'),
     path('import', views.read_csv, name='import'),
+    path('choose_event', views.choose_event, name='choose_event'),
     path('display/settings', views.displaySettings, name='displaySettings'),
     path('display/beamer', views.displayBeamer, name='displayBeamer'),
     path('display/monitor', views.displayMonitor, name='displayMonitor'),

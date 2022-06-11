@@ -39,8 +39,12 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'artistic:inputpdf' %}" target="_blank">Wertungsbögen</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'artistic:import' %}">Import</a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="admin" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Admin</a>
+              <div class="dropdown-menu" aria-labelledby="admin">
+                <a class="dropdown-item" href="{% url 'artistic:import' %}">Import</a>
+                <a class="dropdown-item" href="{% url 'artistic:choose_event' %}">Veranstaltung wählen</a>
+              </div>
             </li>
           {% else %}
             <li class="nav-item">
@@ -48,8 +52,8 @@
             </li>
           {% endif %}
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="admin" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Anzeige (Beamer)</a>
-            <div class="dropdown-menu" aria-labelledby="admin">
+            <a class="nav-link dropdown-toggle" href="#" id="display" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Anzeige (Beamer)</a>
+            <div class="dropdown-menu" aria-labelledby="display">
               {% if user.is_authenticated %}
                 <a class="dropdown-item" href="{% url 'artistic:displaySettings' %}">Anzeige steuern</a>
               {% endif %}

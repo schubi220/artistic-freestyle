@@ -103,6 +103,7 @@ def free(request):
         c = cl[0]
         s = Config.objects.get(key='comp_id')
         s.value = c.id
+        request.session['actcompetition'] = c.id
         s.save()
 
     if request.POST.get('cntnew', False):
@@ -316,6 +317,32 @@ def read_csv(request):
     return render(request, "artistic/import.html", {
         'text': text,
         'event': e,
+    })
+
+
+def choose_event(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+
+    actevent = request.POST.get('actevent', False)
+    if actevent:
+        try:
+            e = Event.objects.get(id=actevent)
+            s = Config.objects.get(key='event_id')
+            s.value = e.id
+            s.save()
+            messages.success(request, 'Varanstaltung: '+e.name+' ausgewählt.')
+        except Event.DoesNotExist:
+            messages.success(error, 'Fehler.')
+
+    try:
+        e = Event.objects.all()
+    except Event.DoesNotExist:
+        messages.warning(request, 'Keine Veranstaltung vorhanden.')
+        return HttpResponseRedirect(reverse('admin:artistic_event_add'))
+
+    return render(request, "artistic/choose_event.html", {
+        'events': e,
     })
 
 

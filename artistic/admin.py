@@ -11,6 +11,7 @@ class EventAdmin(admin.ModelAdmin):
     list_display = ('name', 'firstDay', 'lastDay')
     list_filter = ['firstDay']
     search_fields = ['name']
+    actions = None
 
 
 class EventFilterModelAdmin(admin.ModelAdmin):
