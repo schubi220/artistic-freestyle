@@ -1,5 +1,6 @@
 # Custom
-tmp/
+tmp/*
+!tmp/.gitkeep
 
 # Config folder
 .secrets/
