@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.http import HttpResponseRedirect
-from artistic.models import Event, Competition, Person, Start, Judge
+from artistic.models import Event, Competition, Person, Start, Judge, Config
+
 
 class EventAdmin(admin.ModelAdmin):
     fieldsets = [
@@ -12,17 +13,24 @@ class EventAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
 
-class CompetitionAdmin(admin.ModelAdmin):
+class EventFilterModelAdmin(admin.ModelAdmin):
+    def changelist_view(self, request, extra_context=None):
+        q = request.GET.copy()
+        q['event__id__exact'] = Config.objects.get(key='event_id').value
+        request.GET = q
+        request.META['QUERY_STRING'] = request.GET.urlencode()
+        return super(EventFilterModelAdmin,self).changelist_view(request, extra_context=extra_context)
+
+class CompetitionAdmin(EventFilterModelAdmin):
     fieldsets = [
         (None, {'fields': ['name', 'discipline', ('minAge', 'maxAge')]}),
         ('Advanced options', {'classes': ('collapse',), 'fields': ('event', )}),
     ]
     list_display = ('name', 'discipline', 'minAge', 'maxAge')
-    list_filter = ['event']
     search_fields = ['name']
 
 
-class PersonAdmin(admin.ModelAdmin):
+class PersonAdmin(EventFilterModelAdmin):
     ordering = ['firstname', 'lastname']
     fieldsets = (
         ('Persönliche Daten', {'fields': (('firstname', 'lastname', 'gender'), ('email', 'club'), 'dateofbirth')}),
@@ -30,17 +38,39 @@ class PersonAdmin(admin.ModelAdmin):
         ('Advanced options', {'classes': ('collapse',), 'fields': ('event', )}),
     )
     list_display = ('firstname', 'lastname', 'gender')
-    list_filter = ['event']
     search_fields = ['firstname', 'lastname']
 
 
-class StartAdmin(admin.ModelAdmin):
+class CompetitionFilterModelAdmin(admin.ModelAdmin):
+    def changelist_view(self, request, extra_context=None):
+        if 'competition__id__exact' not in request.GET:
+            q = request.GET.copy()
+            q['competition__id__exact'] = Config.objects.get(key='comp_id').value
+            request.GET = q
+            request.META['QUERY_STRING'] = request.GET.urlencode()
+        return super(CompetitionFilterModelAdmin,self).changelist_view(request, extra_context=extra_context)
+
+class CompetitionFilter(admin.SimpleListFilter):
+    title = 'competition'
+    parameter_name = 'competition__id__exact'
+
+    def lookups(self, request, model_admin):
+        cl = set([c.competition for c in model_admin.model.objects.filter(competition__event__id=Config.objects.get(key='event_id').value)])
+        print(cl)
+        return [(c.id, c.name) for c in cl]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(competition__id__exact=self.value())
+
+
+class StartAdmin(CompetitionFilterModelAdmin):
     ordering = ['time', 'competition', 'order']
     fieldsets = (
         (None, {'fields': ('order', 'people', 'competition', 'info', ('time', 'isActive'))}),
     )
     list_display = ('order', 'competitors_names', 'competitors_clubs', 'get_titel', 'competition', 'time', 'isActive')
-    list_filter = ['competition']
+    list_filter = [CompetitionFilter]
     date_hierarchy = 'time'
 
     def competitors_names(self, inst):
@@ -54,13 +84,13 @@ class StartAdmin(admin.ModelAdmin):
     get_titel.short_description = 'Titel'
 
 
-class JudgeAdmin(admin.ModelAdmin):
+class JudgeAdmin(CompetitionFilterModelAdmin):
     ordering = ['competition', 'possition']
     fieldsets = (
         (None, {'fields': ('name', ('possition', 'type'), 'competition', ('code', 'isActive'))}),
     )
     list_display = ('possition', 'name', 'type', 'competition', 'isActive')
-    list_filter = ['competition']
+    list_filter = [CompetitionFilter]
 
     def response_post_save_change(self, request, obj):
         res = super().response_post_save_change(request, obj)
