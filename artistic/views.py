@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from artistic.models import Judge, Start, Value, Competition, Config, Event, Person
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.contrib import messages
 from artistic import resultworker, pdfview
@@ -10,7 +11,7 @@ import re
 from django.db.models import Q
 
 # Create your views here.
-
+@csrf_exempt
 def code(request):
     code = request.POST.get('code', '')
     if code:
@@ -29,6 +30,7 @@ def code(request):
         'code': code
     })
 
+@csrf_exempt
 def input(request):
     try:
         j = Judge.objects.get(code__iexact=request.session.get('accesscode'))
