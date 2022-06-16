@@ -5,7 +5,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfgen import canvas
-from artistic.models import Judge
+from artistic.models import Judge, Config, Event
 import math
 import datetime
 
@@ -110,7 +110,8 @@ class FooterDetail(canvas.Canvas):
         self.line(595.275590551, 841.8897637795277, 595.275590551, 826.8897637795277)
         self.setStrokeColorRGB(0, 0, 0)
         self.setFont("Helvetica", 6)
-        self.drawString(20, 25, "Seite %s von %s" % (self._pageNumber, page_count))
+        self.drawString(20, 25, Event.objects.get(id=Config.objects.get(key='event_id').value).name)
+        self.drawCentredString(595.275590551, 25, "Seite %s von %s" % (self._pageNumber, page_count))
         self.drawRightString(1150.551181102, 25, 'Ergebnis vom: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
         self.restoreState()
 
@@ -121,7 +122,7 @@ def pdfresult(context):
     data =[]
 
     sample_style_sheet['Heading1'].alignment = 1
-    pagecontext.append(Paragraph('Bayerische Meisterschaft 2022', sample_style_sheet['Heading1']))
+    pagecontext.append(Paragraph(Event.objects.get(id=Config.objects.get(key='event_id').value).name, sample_style_sheet['Heading1']))
     pagecontext.append(Paragraph(context['competiton'].name, sample_style_sheet['Heading2']))
 
     row = ['Platz', 'Name', 'Verein', 'Titel']
@@ -175,7 +176,8 @@ class FooterResult(canvas.Canvas):
         self.line(0, 420.94488189, 15, 420.94488189)
         self.setStrokeColorRGB(0, 0, 0)
         self.setFont("Helvetica", 6)
-        self.drawString(20, 25, "Seite %s von %s" % (self._pageNumber, page_count))
+        self.drawString(20, 25, Event.objects.get(id=Config.objects.get(key='event_id').value).name)
+        self.drawCentredString(297.637795276, 25, "Seite %s von %s" % (self._pageNumber, page_count))
         self.drawRightString(575.2755905511812, 25, 'Ergebnis vom: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
         self.restoreState()
 
@@ -190,14 +192,20 @@ def pdfcertificate(context):
     row.append('Ergebniss')
     data.append(row)
 
-    w, h = A4
+    x = 105 * mm
+    y = 200 * mm
     for cnt in context['result']['place']:
         start = context['starts'][cnt]
-        c.drawCentredString(297.637795276,700, str(context['result']['place'][cnt]) + '. Platz')
-        c.drawCentredString(297.637795276,650, f"{context['result']['full'][start.id] * 100.0:.{2}f}%")
-        c.drawCentredString(297.637795276,600, start.competitors_names())
-        c.drawCentredString(297.637795276,550, start.competitors_clubs())
-        c.drawCentredString(297.637795276,500, start.info['titel'])
+        c.setFont("Helvetica-Bold", 24)
+        c.drawCentredString(x,y, start.competitors_names())
+        c.setFont("Helvetica", 16)
+        c.drawCentredString(x,y-28.34645669291339, start.competitors_clubs())
+        c.setFont("Helvetica-Bold", 20)
+        c.drawCentredString(x,y-79.37007874015748, str(context['result']['place'][cnt]) + '. Platz')
+        c.setFont("Helvetica", 16)
+        c.drawCentredString(x,y-124.7244094488189, context['competiton'].name)
+        c.setFont("Helvetica-Bold", 20)
+        c.drawCentredString(x,y-147.40157480314963, start.info['titel'])
         c.showPage()
 
     c.save()
