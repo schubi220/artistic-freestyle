@@ -1,5 +1,6 @@
  {% extends "base.html" %}
  {% load main_extra %}
+ {% load l10n %}
 
  {% block body %}
   <form action="{% url 'artistic:input' %}" method="post">
@@ -36,9 +37,9 @@
             <td>{{ start.competitors_clubs }}</td>
             <td>{{ start.info.titel }}</td>
             {% with value=values|return_item:start.id %}
-              <td><input type=number step=any value="{{ value.values.0 }}" name="{{ start.id }}v0" class="form-control" size="6" {% if not start.isActive %} disabled{% endif %}></td>
-              <td><input type=number step=any value="{{ value.values.1 }}" name="{{ start.id }}v1" class="form-control" size="6" {% if not start.isActive %} disabled{% endif %}></td>
-              <td><input type=number step=any value="{{ value.values.2 }}" name="{{ start.id }}v2" class="form-control" size="6" {% if not start.isActive %} disabled{% endif %}></td>
+              <td><input type=number step=any value="{{ value.values.0|unlocalize }}" name="{{ start.id }}v0" class="form-control" size="6" {% if not start.isActive %} disabled{% endif %}></td>
+              <td><input type=number step=any value="{{ value.values.1|unlocalize }}" name="{{ start.id }}v1" class="form-control" size="6" {% if not start.isActive %} disabled{% endif %}></td>
+              <td><input type=number step=any value="{{ value.values.2|unlocalize }}" name="{{ start.id }}v2" class="form-control" size="6" {% if not start.isActive %} disabled{% endif %}></td>
               <td>{{ value.values.summe|floatformat:3 }}</td>
               <td>{{ value.values.place }}</td>
               <td>{{ value.values.result|percent:2 }}</td>
