@@ -9,7 +9,7 @@ def calcP(s: QuerySet, judge: Judge):
     return __calc(s, judge, "values[start.id].values.get('0',0)+values[start.id].values.get('1',0)+values[start.id].values.get('2',0)")
 
 def calcD(s: QuerySet, judge: Judge):
-    return __calc(s, judge, "10-(values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))")
+    return __calc(s, judge, "(10-(values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))) if values[start.id].values.get('2',0) < 2 else (10-((values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))/math.sqrt(values[start.id].values.get('2',0))))")
 
 
 def __calc(s: QuerySet, judge: Judge, calculate):
