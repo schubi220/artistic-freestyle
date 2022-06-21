@@ -203,7 +203,11 @@ def pdfcertificate(context):
         c.setFont("Helvetica-Bold", 20)
         c.drawCentredString(x,y-79.37007874015748, str(context['result']['place'][cnt]) + '. Platz')
         c.setFont("Helvetica", 16)
+<<<<<<< HEAD
         c.drawCentredString(x,y-124.7244094488189, context['competiton'].name)
+=======
+        c.drawCentredString(x,y-124.7244094488189, start.competition.name)
+>>>>>>> 18d221ba8dad0f6c0f39cdf3038ecf6ab2038f01
         c.setFont("Helvetica-Bold", 20)
         c.drawCentredString(x,y-147.40157480314963, start.info['titel'])
         c.showPage()
