@@ -63,7 +63,7 @@ def input(request):
             return HttpResponseRedirect(reverse('artistic:code'))
         return HttpResponseRedirect(reverse('artistic:input'))
     else:
-        calc = getattr(resultworker, 'calc' + j.type)
+        calc = getattr(resultworker.artistic, 'calc' + j.type)
         values = calc(s, j)
 
         return render(request, "artistic/input.html", {
