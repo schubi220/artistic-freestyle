@@ -196,7 +196,7 @@ def rate(request):
             judgetypes[judge.type] = 1
             result[judge.type] = {}
 
-        calc = getattr(resultworker, 'calc' + judge.type)
+        calc = getattr(resultworker.artistic, 'calc' + judge.type)
         values[judge.possition] = calc(s, judge)
 
         for value in values[judge.possition]:
