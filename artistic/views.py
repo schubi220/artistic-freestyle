@@ -140,10 +140,7 @@ def inputpdf(request):
     s = Start.objects.filter(competition=c).order_by('order')
     j = Judge.objects.filter(competition=c)
 
-    pdfview.pdfinput({
-        'starts': s,
-        'judges': j
-    })
+    pdfview.pdfinput2019.render({'starts': s, 'judges': j})
 
     file_location = str(settings.BASE_DIR) + '/tmp/pdfinput.pdf'
 
