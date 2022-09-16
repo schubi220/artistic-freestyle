@@ -4,7 +4,8 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.urls import reverse
 from django.contrib import messages
-from artistic import resultworker, pdfview
+from artistic.resultCalculators import FA # else won't find it later
+from artistic import pdfview, resultCalculators
 from django.conf import settings
 from datetime import datetime
 import re
@@ -63,7 +64,7 @@ def input(request):
             return HttpResponseRedirect(reverse('artistic:code'))
         return HttpResponseRedirect(reverse('artistic:input'))
     else:
-        calc = getattr(resultworker.artistic, 'calc' + j.type)
+        calc = getattr(eval('resultCalculators.'+j.competition.discipline), 'judgeResult')
         values = calc(s, j)
 
         return render(request, "artistic/input.html", {
@@ -193,7 +194,7 @@ def rate(request):
             judgetypes[judge.type] = 1
             result[judge.type] = {}
 
-        calc = getattr(resultworker.artistic, 'calc' + judge.type)
+        calc = getattr(eval('resultCalculators.'+c.discipline), 'judgeResult')
         values[judge.possition] = calc(s, judge)
 
         for value in values[judge.possition]:
