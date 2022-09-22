@@ -83,6 +83,8 @@ class Start(models.Model):
     isActive = models.BooleanField("Started?", default=True)
 
     def competitors_names(self):
+        if not self.id:
+            return ''
         people = self.people.all()
         if 'cnt' in self.info:
             return str(self.info['cnt'])+' Fahrer'

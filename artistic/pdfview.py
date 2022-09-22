@@ -1,3 +1,4 @@
+from sre_compile import isstring
 from django.conf import settings
 from reportlab.lib.pagesizes import A3, landscape, A4
 from reportlab.lib import colors
@@ -5,7 +6,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.pdfgen import canvas
-from artistic.models import Judge, Config, Event
+from artistic.models import Judge, Config, Event, Start
 import math
 import datetime
 
@@ -246,7 +247,9 @@ class pdfinput2019:
         c.drawString(232*mm, 200*mm, 'Jury: ' + judge.possition)
 
         c.setFont('Helvetica', 6)
+        c.drawString(25.6, 20, judge.competition.event.name)
         c.drawCentredString(420.94488189, 20, 'Seite: '+str(page[0])+' von '+str(page[1]))
+        c.drawRightString(816.28976378, 20, 'Gedruckt am: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
 
     def __frame(c, start):
         c.setLineWidth(2)
@@ -433,3 +436,249 @@ class pdfinput2019:
 
         c.drawString(246*mm, 9*mm, '=')
         c.rect(252*mm, 4*mm, 27*mm, 14*mm)
+
+class pdfinput2018:
+    def render(context):
+        c = canvas.Canvas(str(settings.BASE_DIR) + '/tmp/pdfinput.pdf', pagesize=landscape(A4))
+
+        pages = math.ceil(context['starts'].count()/15)
+        for judge in context['judges']:
+            page = 1
+            getattr(pdfinput2018, "head" + judge.type)(c, judge, [page, pages])
+            c.translate(0, 150*mm)
+            for start in context['starts']:
+                getattr(pdfinput2018, "frame" + judge.type)(c, start)
+                c.translate(0, -10*mm)
+            for i in range(context['starts'].count(), 15):
+                getattr(pdfinput2018, "frame" + judge.type)(c, Start(info={'titel': ''}))
+                c.translate(0, -10*mm)
+            c.showPage()
+
+        c.save()
+
+    def headT(c, judge, page):
+        c.setLineWidth(0.25)
+        c.line(420.94488189, 595.275590551181, 420.94488189, 580.275590551181)
+        c.setFont('Helvetica', 6)
+        c.drawString(25.6, 20, judge.competition.event.name)
+        c.drawCentredString(420.94488189, 20, 'Seite: '+str(page[0])+' von '+str(page[1]))
+        c.drawRightString(816.28976378, 20, 'Gedruckt am: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
+
+        c.setFont('Helvetica', 12)
+        c.rect(9*mm, 190*mm, 71*mm, 10*mm)
+        c.drawString(10*mm, 196*mm, 'Disziplin:')
+        c.drawString(10*mm, 191.5*mm, judge.competition.name)
+        c.rect(80*mm, 190*mm, 46*mm, 10*mm)
+        c.drawString(81*mm, 196*mm, 'Name:')
+        c.drawString(81*mm, 191.5*mm, judge.name)
+        c.rect(126*mm, 190*mm, 122*mm, 10*mm)
+        c.drawString(127*mm, 193*mm, 'Technik Bogen: Einzel-, Paar- u. Gruppenkueren')
+        c.rect(248*mm, 190*mm, 30*mm, 10*mm)
+        c.drawString(249*mm, 196*mm, 'Code:')
+        c.drawString(249*mm, 191.5*mm, judge.code)
+        c.rect(278*mm, 190*mm, 10*mm, 10*mm)
+        c.drawString(280*mm, 193*mm, judge.possition)
+
+        c.setFillColorRGB(0.8,1,1)
+        c.rect(9*mm, 180*mm, 71*mm, 10*mm, fill=1)
+        c.rect(80*mm, 180*mm, 60*mm, 10*mm, fill=1)
+        c.rect(140*mm, 180*mm, 72*mm, 10*mm, fill=1)
+        c.rect(212*mm, 180*mm, 36*mm, 10*mm, fill=1)
+        c.rect(248*mm, 180*mm, 40*mm, 10*mm, fill=1)
+        c.setFillColorRGB(0,0,0)
+        c.setFont('Helvetica', 9.5)
+        c.drawCentredString(110*mm, 184*mm, 'Anzahl der Einradtricks & Uebergaenge')
+        c.drawCentredString(176*mm, 184*mm, 'Sicherheit & Qualitaet der Ausfuehrung')
+        c.drawCentredString(230*mm, 184*mm, 'Schwierigkeit & Dauer')
+        c.drawCentredString(268*mm, 184*mm, 'Resultat')
+
+        c.line(9*mm, 180*mm, 9*mm, 164*mm)
+        c.line(288*mm, 180*mm, 288*mm, 164*mm)
+
+        text = ['Tricks','Übergaenge','Variation','Originalitaet','Total','Stabilitaet','Dauer','Geschwindigkeit','Synchronisation',['Fliessende','Übergaenge'],'Total','Schwierigkeit','Dauer','Total',['Technik','Total'],['Technik','Platzierung']]
+        c.setFont('Helvetica', 8)
+        for i in range(0,16):
+            x = i * 12
+            c.line((80+x)*mm, 180*mm, (96+x)*mm, 164*mm)
+            c.saveState()
+            c.translate((93+x)*mm, 171*mm)
+            c.rotate(-45)
+            if isstring(text[i]):
+                c.drawCentredString(0, 0, text[i])
+            else:
+                c.drawCentredString(0, 4.5, text[i][0])
+                c.drawCentredString(0, -4.5, text[i][1])
+            c.restoreState()
+
+        c.setFillColorRGB(0.8,1,1)
+        c.rect(9*mm, 160*mm, 87*mm, 4*mm, fill=1)
+        c.rect(96*mm, 160*mm, 60*mm, 4*mm, fill=1)
+        c.rect(156*mm, 160*mm, 72*mm, 4*mm, fill=1)
+        c.rect(228*mm, 160*mm, 36*mm, 4*mm, fill=1)
+        c.rect(264*mm, 160*mm, 24*mm, 4*mm, fill=1)
+        c.setFillColorRGB(0,0,0)
+        c.setFont('Helvetica', 9)
+        c.drawCentredString(126*mm, 161*mm, 'Max. 10')
+        c.drawCentredString(192*mm, 161*mm, 'Max. 10')
+        c.drawCentredString(251*mm, 161*mm, 'Max. 10')
+        c.drawCentredString(276*mm, 161*mm, '')
+    
+    def frameT(c, start):
+        c.rect(9*mm, 0, 87*mm, 10*mm)
+        c.setFont('Helvetica', 12)
+        c.setFillColorRGB(0,0,0)
+        c.drawString(10*mm, 6*mm, start.competitors_names())
+        c.drawString(10*mm, 1.5*mm, start.info['titel'])
+        c.setFillColorRGB(0.9,0.9,0.7)
+        fill = [0,0,0,0,1,0,0,0,0,0,1,0,0,1,0,0]
+        for i in range(0,16):
+            x = i * 12
+            c.rect((96+x)*mm, 0, 12*mm, 10*mm, fill=fill[i])
+
+    def headP(c, judge, page):
+        c.setLineWidth(0.25)
+        c.line(420.94488189, 595.275590551181, 420.94488189, 580.275590551181)
+        c.setFont('Helvetica', 6)
+        c.drawString(25.6, 20, judge.competition.event.name)
+        c.drawCentredString(420.94488189, 20, 'Seite: '+str(page[0])+' von '+str(page[1]))
+        c.drawRightString(816.28976378, 20, 'Gedruckt am: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
+
+        c.setFont('Helvetica', 12)
+        c.rect(9*mm, 190*mm, 63*mm, 10*mm)
+        c.drawString(10*mm, 196*mm, 'Disziplin:')
+        c.drawString(10*mm, 191.5*mm, judge.competition.name)
+        c.rect(72*mm, 190*mm, 54*mm, 10*mm)
+        c.drawString(73*mm, 196*mm, 'Name:')
+        c.drawString(73*mm, 191.5*mm, judge.name)
+        c.rect(126*mm, 190*mm, 122*mm, 10*mm)
+        c.drawString(127*mm, 193*mm, 'Performance Bogen: Einzel-, Paar- u. Gruppenkueren')
+        c.rect(248*mm, 190*mm, 30*mm, 10*mm)
+        c.drawString(249*mm, 196*mm, 'Code:')
+        c.drawString(249*mm, 191.5*mm, judge.code)
+        c.rect(278*mm, 190*mm, 10*mm, 10*mm)
+        c.drawString(280*mm, 193*mm, judge.possition)
+
+        c.setFillColorRGB(0.8,1,1)
+        c.rect(9*mm, 180*mm, 63*mm, 10*mm, fill=1)
+        c.rect(72*mm, 180*mm, 70*mm, 10*mm, fill=1)
+        c.rect(142*mm, 180*mm, 60*mm, 10*mm, fill=1)
+        c.rect(202*mm, 180*mm, 50*mm, 10*mm, fill=1)
+        c.rect(252*mm, 180*mm, 36*mm, 10*mm, fill=1)
+        c.setFillColorRGB(0,0,0)
+        c.setFont('Helvetica', 9.5)
+        c.drawCentredString(107*mm, 184*mm, 'Praesenz / Bewegungsausfuehrung')
+        c.drawCentredString(172*mm, 184*mm, 'Komposition / Choreographie')
+        c.drawCentredString(227*mm, 184*mm, 'Interpretation von Musik/Timing')
+        c.drawCentredString(270*mm, 184*mm, 'Resultat')
+
+        c.line(9*mm, 180*mm, 9*mm, 164*mm)
+        c.line(288*mm, 180*mm, 288*mm, 164*mm)
+
+        text = ['Praesenz','Koerperhaltung','Authentizitaet','Klarheit','Stimmung','Koerpersprache','Total','Zweck','Harmonie','Fahrwege','Dynamik','Einfallsreichtum','Total',['Kontinuitaet & musikalische','Umsetzung'],['Musikalischer','Ausdruck'],'Finesse','Timing','Total',['Performance','Total'],['Performance','Platzierung']]
+        c.setFont('Helvetica', 8)
+        for i in range(0,20):
+            x = i * 10
+            c.line((72+x)*mm, 180*mm, (88+x)*mm, 164*mm)
+            c.saveState()
+            c.translate((84.3+x)*mm, 171*mm)
+            c.rotate(-45)
+            if isstring(text[i]):
+                c.drawCentredString(0, 0, text[i])
+            else:
+                c.drawCentredString(0, 4.5, text[i][0])
+                c.drawCentredString(0, -4.5, text[i][1])
+            c.restoreState()
+
+        c.setFillColorRGB(0.8,1,1)
+        c.rect(9*mm, 160*mm, 79*mm, 4*mm, fill=1)
+        c.rect(88*mm, 160*mm, 70*mm, 4*mm, fill=1)
+        c.rect(158*mm, 160*mm, 60*mm, 4*mm, fill=1)
+        c.rect(218*mm, 160*mm, 50*mm, 4*mm, fill=1)
+        c.rect(268*mm, 160*mm, 20*mm, 4*mm, fill=1)
+        c.setFillColorRGB(0,0,0)
+        c.setFont('Helvetica', 9)
+        c.drawCentredString(123*mm, 161*mm, 'Max. 10')
+        c.drawCentredString(188*mm, 161*mm, 'Max. 10')
+        c.drawCentredString(243*mm, 161*mm, 'Max. 10')
+        c.drawCentredString(278*mm, 161*mm, '')
+    
+    def frameP(c, start):
+        c.rect(9*mm, 0, 79*mm, 10*mm)
+        c.setFont('Helvetica', 12)
+        c.setFillColorRGB(0,0,0)
+        c.drawString(10*mm, 6*mm, start.competitors_names())
+        c.drawString(10*mm, 1.5*mm, start.info['titel'])
+        c.setFillColorRGB(0.9,0.9,0.7)
+        fill = [0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,0,0]
+        for i in range(0,20):
+            x = i * 10
+            c.rect((88+x)*mm, 0, 10*mm, 10*mm, fill=fill[i])
+
+    def headD(c, judge, page):
+        c.setLineWidth(0.25)
+        c.line(420.94488189, 595.275590551181, 420.94488189, 580.275590551181)
+        c.setFont('Helvetica', 6)
+        c.drawString(25.6, 20, judge.competition.event.name)
+        c.drawCentredString(420.94488189, 20, 'Seite: '+str(page[0])+' von '+str(page[1]))
+        c.drawRightString(816.28976378, 20, 'Gedruckt am: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
+
+        c.setFont('Helvetica', 12)
+        c.rect(9*mm, 190*mm, 71*mm, 10*mm)
+        c.drawString(10*mm, 196*mm, 'Disziplin:')
+        c.drawString(10*mm, 191.5*mm, judge.competition.name)
+        c.rect(80*mm, 190*mm, 46*mm, 10*mm)
+        c.drawString(81*mm, 196*mm, 'Name:')
+        c.drawString(81*mm, 191.5*mm, judge.name)
+        c.rect(126*mm, 190*mm, 122*mm, 10*mm)
+        c.drawString(127*mm, 193*mm, 'Abstiege Bogen: Einzel-, Paar- u. Gruppenkueren')
+        c.rect(248*mm, 190*mm, 30*mm, 10*mm)
+        c.drawString(249*mm, 196*mm, 'Code:')
+        c.drawString(249*mm, 191.5*mm, judge.code)
+        c.rect(278*mm, 190*mm, 10*mm, 10*mm)
+        c.drawString(280*mm, 193*mm, judge.possition)
+
+        c.setFillColorRGB(0.8,1,1)
+        c.rect(9*mm, 180*mm, 71*mm, 10*mm, fill=1)
+        c.rect(80*mm, 180*mm, 72*mm, 10*mm, fill=1)
+        c.rect(152*mm, 180*mm, 72*mm, 10*mm, fill=1)
+        c.rect(224*mm, 180*mm, 64*mm, 10*mm, fill=1)
+        c.setFillColorRGB(0,0,0)
+        c.setFont('Helvetica', 9.5)
+        c.drawCentredString(116*mm, 184*mm, 'Geringfügige Abstiege')
+        c.drawCentredString(188*mm, 184*mm, 'Schwerwiegende Abstiege')
+        c.drawCentredString(258*mm, 184*mm, 'Anzahl der Fahrer')
+
+        c.line(9*mm, 180*mm, 9*mm, 164*mm)
+        c.line(288*mm, 180*mm, 288*mm, 164*mm)
+
+        text = ['','Stichliste','Abstiege','Geringfügige','','Total','','Stichliste','Abstiege','Schwerwiegende','','Total','Fahrer','der','Anzahl','Total']
+        c.setFont('Helvetica', 8)
+        for i in range(0,16):
+            x = i * 12
+            c.line((80+x)*mm, 180*mm, (96+x)*mm, 164*mm)
+            c.saveState()
+            c.translate((92+x)*mm, 171*mm)
+            c.rotate(-45)
+            c.drawCentredString(0, 0, text[i])
+            c.restoreState()
+
+        c.setFillColorRGB(0.8,1,1)
+        c.rect(9*mm, 160*mm, 87*mm, 4*mm, fill=1)
+        c.rect(96*mm, 160*mm, 72*mm, 4*mm, fill=1)
+        c.rect(168*mm, 160*mm, 72*mm, 4*mm, fill=1)
+        c.rect(240*mm, 160*mm, 48*mm, 4*mm, fill=1)
+        c.setFillColorRGB(0,0,0)
+    
+    def frameD(c, start):
+        c.rect(9*mm, 0, 87*mm, 10*mm)
+        c.setFont('Helvetica', 12)
+        c.setFillColorRGB(0,0,0)
+        c.drawString(10*mm, 6*mm, start.competitors_names())
+        c.drawString(10*mm, 1.5*mm, start.info['titel'])
+        c.setFillColorRGB(0.9,0.9,0.7)
+        c.rect(96*mm, 0, 60*mm, 10*mm)
+        c.rect(156*mm, 0, 12*mm, 10*mm, fill=1)
+        c.rect(168*mm, 0, 60*mm, 10*mm)
+        c.rect(228*mm, 0, 12*mm, 10*mm, fill=1)
+        c.rect(240*mm, 0, 36*mm, 10*mm)
+        c.rect(276*mm, 0, 12*mm, 10*mm, fill=1)
