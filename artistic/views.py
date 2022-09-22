@@ -183,65 +183,17 @@ def rate(request):
     s = Start.objects.filter(query).order_by('order')
     j = Judge.objects.filter(competition=c)
 
-    values = {}
-    judgetypes = {}
-    result = {}
-    result['full'] = {}
-    for judge in j:
-        if judge.type in judgetypes:
-            judgetypes[judge.type] += 1
-        else:
-            judgetypes[judge.type] = 1
-            result[judge.type] = {}
-
-        calc = getattr(eval('resultCalculators.'+c.discipline), 'judgeResult')
-        values[judge.possition] = calc(s, judge)
-
-        for value in values[judge.possition]:
-            if not value in result[judge.type]:
-                result[judge.type][value] = 0
-            result[judge.type][value] += values[judge.possition][value].values['result']
-
-    sort = {}
-    same = {}
-    cnt = 0
-    for start in s:
-        for jtype in judgetypes:
-            result[jtype][start.id] = result[jtype][start.id] / judgetypes[jtype]
-        result['full'][start.id] = round(result['T'][start.id]*0.45 + result['P'][start.id]*0.45 + result['D'][start.id]*0.1, 4)
-        a = str(round(result['T'][start.id], 4))[2:]
-        a = str(result['full'][start.id])+a
-        while a in sort:
-            a += '0'
-            same[a] = 0
-        sort[a] = cnt
-        cnt += 1
-
-    pl = 1
-    result['place'] = {}
-    for res in sorted(sort, reverse=True):
-        if res in same:
-            if same[res] > 0:
-                result['place'][sort[res]] = same[res]
-            else:
-                result['place'][sort[res]] = pl
-            del same[res]
-            same[res[0:-1]] = result['place'][sort[res]]
-        else:
-            result['place'][sort[res]] = pl
-        pl += 1
+    calc = getattr(eval('resultCalculators.'+c.discipline), 'fullResult')
+    result = calc(s, j)
 
     context = {
         'competiton': c,
         'starts': s,
         'judges': j,
-        'judgetypes': judgetypes,
-        'values': values,
         'result': result
     }
     pdfview.pdfdetail(context)
     pdfview.pdfresult(context)
-    pdfview.pdfcertificate(context)
     return render(request, "artistic/rate.html", context)
 
 def wrappdf(request, filename):

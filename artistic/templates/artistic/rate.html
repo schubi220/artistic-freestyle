@@ -3,6 +3,7 @@
 {% load static %}
 
 {% block body %}
+{% with judgetypes='TPD' %}
   <h1>{{ competiton.name }}</h1>
 
   <ul class="nav nav-tabs" role="tablist">
@@ -14,11 +15,9 @@
     {% endfor %}
     <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'result' %}" class="nav-link" role="tab" target="_blank">PDF Aushang</a></li>
     <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'detail' %}" class="nav-link" role="tab" target="_blank">PDF Übersicht</a></li>
-    <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'certificate' %}" class="nav-link" role="tab" target="_blank">PDF Urkunden</a></li>
     <li class="nav-item"><a href="{% url 'artistic:select' %}" class="nav-link" role="tab">mehrere Alterklassen wählen</a></li>
   </ul>
   <div class="tab-content">
-
 
     <div role="tabpanel" class="tab-pane fade show active table-responsive" id="result">
       <table class="table table-bordered table-hover table-sm">
@@ -35,19 +34,21 @@
           </tr>
         </thead>
         <tbody>
-          {% for cnt in result.place %}
-            {% with start=starts|return_item:cnt %}
+          {% for start in starts %}
             <tr{% if not start.isActive %} class="canceled"{% endif %}>
               <td>{{ start.info.titel }}</td>
               <td>{{ start.competitors_names }}</td>
               <td>{{ start.competitors_clubs }}</td>
               {% for jtype in judgetypes %}
-                <td>{{ result|return_item:jtype|return_item:start.id|percent:2 }}</td>
+                {% with res=result.full|return_item:jtype|return_item:start.id %}
+                  <td>{{ res.values.result|percent:2 }}</td>
+                {% endwith %}
               {% endfor %}
-              <td>{{ result.full|return_item:start.id|percent:2 }}</td>
-              <td>{{ result.place|return_item:cnt }}</td>
+              {% with res=result.full.full|return_item:start.id %}
+                <td>{{ res.result|percent:2 }}</td>
+                <td>{{ res.place }}</td>
+              {% endwith %}
             </tr>
-            {% endwith %}
           {% endfor %}
         </tbody>
       </table>
@@ -78,16 +79,18 @@
               <td>{{ start.competitors_names }}</td>
               <td>{{ start.competitors_clubs }}</td>
               <td>{{ start.info.titel }}</td>
-              <td></td>
-              <td>{{ result.full|return_item:start.id|percent:2 }}</td>
+              {% with res=result.full.full|return_item:start.id %}
+                <td>{{ res.result|percent:2 }}</td>
+                <td>{{ res.place }}</td>
+              {% endwith %}
               {% for jtype in judgetypes %}
-                <td style="border-left: thin solid #000;">{{ result|return_item:jtype|return_item:start.id|percent:2 }}</td>
+                {% with res=result.full|return_item:jtype|return_item:start.id %}
+                  <td style="border-left: thin solid #000;">{{ res.values.result|percent:2 }}</td>
+                {% endwith %}
                 {% for judge in judges %}{% if judge.type == jtype %}
-                  {% with v=values|return_item:judge.possition %}
-                    {% with value=v|return_item:start.id %}
+                  {% with value=result|return_item:jtype|return_item:judge.possition|return_item:start.id %}
                     <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
                     <td>{{ value.values.result|percent:2 }}</td>
-                    {% endwith %}
                   {% endwith %}
                 {% endif %}{% endfor %}
               {% endfor %}
@@ -120,13 +123,13 @@
               <td>{{ start.competitors_names }}</td>
               <td>{{ start.competitors_clubs }}</td>
               <td>{{ start.info.titel }}</td>
-              <td>{{ result|return_item:jtype|return_item:start.id }}</td>
+              {% with res=result.full|return_item:jtype|return_item:start.id %}
+                <td>{{ res.values.result|percent:2 }}</td>
+              {% endwith %}
               {% for judge in judges %}{% if judge.type == jtype %}
-                {% with v=values|return_item:judge.possition %}
-                  {% with value=v|return_item:start.id %}
-                    <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
-                    <td>{{ value.values.result|percent:2 }}</td>
-                  {% endwith %}
+                {% with value=result|return_item:jtype|return_item:judge.possition|return_item:start.id %}
+                  <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
+                  <td>{{ value.values.result|percent:2 }}</td>
                 {% endwith %}
               {% endif %}{% endfor %}
             </tr>
@@ -159,17 +162,17 @@
               <td>{{ start.competitors_names }}</td>
               <td>{{ start.competitors_clubs }}</td>
               <td>{{ start.info.titel }}</td>
-              <td>{{ result|return_item:jtype|return_item:start.id|percent:2 }}</td>
+              {% with res=result.full|return_item:jtype|return_item:start.id %}
+                <td>{{ res.values.result|percent:2 }}</td>
+              {% endwith %}
               {% for judge in judges %}{% if judge.type == jtype %}
-                {% with v=values|return_item:judge.possition %}
-                  {% with value=v|return_item:start.id %}
-                    <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
-                    <td>{{ value.values.result|percent:2 }}</td>
-                    <td>{{ value.values.summe }}</td>
-                    <td>{{ value.values.0 }}</td>
-                    <td>{{ value.values.1 }}</td>
-                    <td>{{ value.values.2 }}</td>
-                  {% endwith %}
+                {% with value=result|return_item:jtype|return_item:judge.possition|return_item:start.id %}
+                  <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
+                  <td>{{ value.values.result|percent:2 }}</td>
+                  <td>{{ value.values.summe }}</td>
+                  <td>{{ value.values.0 }}</td>
+                  <td>{{ value.values.1 }}</td>
+                  <td>{{ value.values.2 }}</td>
                 {% endwith %}
               {% endif %}{% endfor %}
             </tr>
@@ -179,5 +182,7 @@
     </div>
     {% endfor %}
 
+
   </div>
+{% endwith %}
 {% endblock %}
