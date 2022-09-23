@@ -18,7 +18,6 @@ def pdfdetail(context):
     sample_style_sheet['Heading2'].spaceBefore = 25
 
     for jtype in 'TPD':
-        print(jtype)
         pagecontext.append(Paragraph([i[1] for i in Judge.JUDGETYPE_CHOICES if i[0] == jtype][0], sample_style_sheet['Heading2']))
         data =[]
         row = ['#', 'Name', 'Verein']
@@ -133,15 +132,16 @@ def pdfresult(context):
     row.append('Ergebniss')
     data.append(row)
 
-    for start in context['starts']:
+    for cnt in context['result']['full']['full']:
+        start = context['result']['full']['T'][cnt].start
         row = []
-        row.append(context['result']['full']['full'][start.id]['place'])
+        row.append(context['result']['full']['full'][cnt]['place'])
         row.append(Paragraph(start.competitors_names(), sample_style_sheet['Normal']))
         row.append(Paragraph(start.competitors_clubs(), sample_style_sheet['Normal']))
         row.append(Paragraph(start.info['titel'], sample_style_sheet['Normal']))
         for jtype in 'TPD':
-            row.append(f"{context['result']['full'][jtype][start.id].values['result'] * 100.0:.{2}f}%")
-        row.append(f"{context['result']['full']['full'][start.id]['result'] * 100.0:.{2}f}%")
+            row.append(f"{context['result']['full'][jtype][cnt].values['result'] * 100.0:.{2}f}%")
+        row.append(f"{context['result']['full']['full'][cnt]['result'] * 100.0:.{2}f}%")
         data.append(row)
 
     t = Table(data, colWidths=(None, 35*mm, 33*mm, 48*mm, None, None, None, None))
@@ -181,6 +181,29 @@ class FooterResult(canvas.Canvas):
         self.drawCentredString(297.637795276, 25, "Seite %s von %s" % (self._pageNumber, page_count))
         self.drawRightString(575.2755905511812, 25, 'Ergebnis vom: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
         self.restoreState()
+
+
+def pdfcertificate(context):
+    c = canvas.Canvas(str(settings.BASE_DIR) + '/tmp/pdfcertificate.pdf', pagesize=A4)
+
+    x = 105 * mm
+    y = 200 * mm
+    for cnt in context['result']['full']['full']:
+        start = context['result']['full']['T'][cnt].start
+        c.setFont("Helvetica-Bold", 24)
+        c.drawCentredString(x,y, start.competitors_names())
+        c.setFont("Helvetica", 16)
+        c.drawCentredString(x,y-28.34645669291339, start.competitors_clubs())
+        c.setFont("Helvetica-Bold", 20)
+        c.drawCentredString(x,y-79.37007874015748, str(context['result']['full']['full'][cnt]['place']) + '. Platz')
+        c.setFont("Helvetica", 16)
+        c.drawCentredString(x,y-124.7244094488189, context['competiton'].name)
+        c.setFont("Helvetica-Bold", 20)
+        c.drawCentredString(x,y-147.40157480314963, start.info['titel'])
+        c.showPage()
+
+    c.save()
+    
 
 class pdfinput2019:
     def render(context):

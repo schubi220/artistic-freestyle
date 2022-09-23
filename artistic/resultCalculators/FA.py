@@ -68,18 +68,19 @@ def fullResult(s: QuerySet, j: QuerySet):
                 sum += result['full'][type][i].values['summe']
 
     result['full']['full'] = {}
-    sort = []
+    sort = {}
     for i in result['full']['D']:
         result['full']['D'][i].values['result'] = (result['full']['D'][i].values['summe'] / sum) if sum > 0 else 0
 
-        result['full']['full'][i] = {'result': result['full']['T'][i].values['result']*0.45+result['full']['P'][i].values['result']*0.45+result['full']['D'][i].values['result']*0.1}
-        a = str(result['full']['full'][i]['result'])
+        res = result['full']['T'][i].values['result']*0.45+result['full']['P'][i].values['result']*0.45+result['full']['D'][i].values['result']*0.1
+        a = str(res)
         while a in sort: a += '0'
-        sort.append(float(a))
+        sort[a] = i
 
-    sort.sort(reverse=True)
-    for i in result['full']['D']:
-        result['full']['full'][i]['place'] = sort.index(result['full']['full'][i]['result']) + 1
-
+    pl = 1
+    for res in sorted(sort, reverse=True):
+        result['full']['full'][sort[res]] = {'result': float(res), 'place': pl}
+        if res[-1] != '0':
+            pl += 1
 
     return result

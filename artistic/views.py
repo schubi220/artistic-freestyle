@@ -194,6 +194,7 @@ def rate(request):
     }
     pdfview.pdfdetail(context)
     pdfview.pdfresult(context)
+    pdfview.pdfcertificate(context)
     return render(request, "artistic/rate.html", context)
 
 def wrappdf(request, filename):
