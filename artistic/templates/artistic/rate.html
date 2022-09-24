@@ -13,8 +13,8 @@
     <li class="nav-item"><a href="#tab{{ jtype }}1" class="nav-link" aria-controls="tab{{ jtype }}1" role="tab" data-toggle="tab">{{ jtype }} 1</a></li>
     <li class="nav-item"><a href="#tab{{ jtype }}2" class="nav-link" aria-controls="tab{{ jtype }}2" role="tab" data-toggle="tab">{{ jtype }} 2</a></li>
     {% endfor %}
-    <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'result' %}" class="nav-link" role="tab" target="_blank">PDF Aushang</a></li>
-    <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'detail' %}" class="nav-link" role="tab" target="_blank">PDF Übersicht</a></li>
+    <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'notice' %}" class="nav-link" role="tab" target="_blank">PDF Aushang</a></li>
+    <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'result' %}" class="nav-link" role="tab" target="_blank">PDF Übersicht</a></li>
     <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'certificate' %}" class="nav-link" role="tab" target="_blank">PDF Urkunden</a></li>
     <li class="nav-item"><a href="{% url 'artistic:select' %}" class="nav-link" role="tab">mehrere Alterklassen wählen</a></li>
   </ul>
@@ -24,6 +24,7 @@
       <table class="table table-bordered table-hover table-sm">
         <thead>
           <tr>
+            <th>#</th>
             <th>Titel</th>
             <th>Name</th>
             <th>Verein</th>
@@ -37,6 +38,7 @@
         <tbody>
           {% for start in starts %}
             <tr{% if not start.isActive %} class="canceled"{% endif %}>
+              <td>{{ start.order }}</td>
               <td>{{ start.info.titel }}</td>
               <td>{{ start.competitors_names }}</td>
               <td>{{ start.competitors_clubs }}</td>
@@ -170,7 +172,7 @@
                 {% with value=result|return_item:jtype|return_item:judge.possition|return_item:start.id %}
                   <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
                   <td>{{ value.values.result|percent:2 }}</td>
-                  <td>{{ value.values.summe }}</td>
+                  <td>{{ value.values.summe|floatformat:3 }}</td>
                   <td>{{ value.values.0 }}</td>
                   <td>{{ value.values.1 }}</td>
                   <td>{{ value.values.2 }}</td>

@@ -141,7 +141,7 @@ def inputpdf(request):
     s = Start.objects.filter(competition=c).order_by('order')
     j = Judge.objects.filter(competition=c)
 
-    pdfview.pdfinput2019.render({'starts': s, 'judges': j})
+    pdfview.pdfinput2019.render({'competiton': c, 'starts': s, 'judges': j})
 
     file_location = str(settings.BASE_DIR) + '/tmp/pdfinput.pdf'
 
@@ -192,8 +192,8 @@ def rate(request):
         'judges': j,
         'result': result
     }
-    pdfview.pdfdetail(context)
     pdfview.pdfresult(context)
+    pdfview.pdfnotice(context)
     pdfview.pdfcertificate(context)
     return render(request, "artistic/rate.html", context)
 
@@ -204,11 +204,11 @@ def wrappdf(request, filename):
 
     file_location = str(settings.BASE_DIR) + '/tmp/pdf'+filename+'.pdf'
 
-    #    try:
-    response = HttpResponse(open(file_location, 'rb'), content_type='application/pdf')
-    response['Content-Disposition'] = 'filename='+c.name+'.pdf'
-    #    except:
-    #        response = HttpResponseNotFound('<h1>File not exist</h1>')
+    try:
+        response = HttpResponse(open(file_location, 'rb'), content_type='application/pdf')
+        response['Content-Disposition'] = 'filename='+c.name+'_'+filename+'.pdf'
+    except:
+        response = HttpResponseNotFound('<h1>File not exist</h1>')
 
     return response
 

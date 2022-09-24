@@ -10,26 +10,33 @@ from artistic.models import Judge, Config, Event, Start
 import math
 import datetime
 
-def pdfdetail(context):
-    c = SimpleDocTemplate(str(settings.BASE_DIR) + '/tmp/pdfdetail.pdf', pagesize=landscape(A3), rightMargin=56, leftMargin=56, topMargin=56, bottomMargin=56)
+def pdfresult(context):
+    c = SimpleDocTemplate(str(settings.BASE_DIR) + '/tmp/pdfresult.pdf', pagesize=landscape(A3), rightMargin=56, leftMargin=56, topMargin=56, bottomMargin=56)
+    c.title = "Ergebniss "+context['competiton'].name
     pagecontext = []
     sample_style_sheet = getSampleStyleSheet()
     pagecontext.append(Paragraph(context['competiton'].name, sample_style_sheet['Heading1']))
+    h = 6
     sample_style_sheet['Heading2'].spaceBefore = 25
 
     for jtype in 'TPD':
-        pagecontext.append(Paragraph([i[1] for i in Judge.JUDGETYPE_CHOICES if i[0] == jtype][0], sample_style_sheet['Heading2']))
         data =[]
+        style = [
+            ('BACKGROUND',(0,0),(-1,0),colors.yellow),
+            ('LINEBELOW',(0,0),(-1,0),2,colors.black),
+            ('BACKGROUND',(0,0),(-1,0),colors.yellow)
+        ]
         row = ['#', 'Name', 'Verein']
         row.append(jtype)
         for judge in context['judges']:
             if judge.type == jtype:
+                style.append(('LINEBEFORE', (len(row),0), (len(row),-1),0.5,colors.black))
                 row.append(judge.possition)
-                row.append('')
                 row.append('1')
                 row.append('2')
                 row.append('3')
         data.append(row)
+        h += 25
 
         for start in context['starts']:
             row = []
@@ -39,56 +46,65 @@ def pdfdetail(context):
             row.append(f"{context['result']['full'][jtype][start.id].values['result'] * 100.0:.{2}f}%")
             for judge in context['judges']:
                 if judge.type == jtype:
-                    row.append(context['result'][jtype][judge.possition][start.id].values['place'])
-                    row.append(f"{context['result'][jtype][judge.possition][start.id].values['result'] * 100.0:.{2}f}%")
+                    row.append(str(context['result'][jtype][judge.possition][start.id].values['place']) +", "+ f"{context['result'][jtype][judge.possition][start.id].values['result'] * 100.0:.{2}f}%")
                     row.append(context['result'][jtype][judge.possition][start.id].values.get('0'))
                     row.append(context['result'][jtype][judge.possition][start.id].values.get('1'))
                     row.append(context['result'][jtype][judge.possition][start.id].values.get('2'))
             data.append(row)
+            h += 6
 
         t = Table(data, hAlign='LEFT')
-        t.setStyle(TableStyle([
-            ('BACKGROUND',(0,0),(-1,0),colors.yellow),
-            ('LINEBELOW',(0,0),(-1,0),2,colors.black),
-            ('BACKGROUND',(0,0),(-1,0),colors.yellow)
-        ]))
+        t.setStyle(TableStyle(style))
+        if h > 240:
+            h = 0
+            pagecontext.append(PageBreak())
+        pagecontext.append(Paragraph([i[1] for i in Judge.JUDGETYPE_CHOICES if i[0] == jtype][0], sample_style_sheet['Heading2']))
         pagecontext.append(t)
 
-#    pagecontext.append(PageBreak())
-    pagecontext.append(Paragraph("Gesamt", sample_style_sheet['Heading2']))
+    # Gesamttabelle
     data =[]
+    style = [
+        ('BACKGROUND',(0,0),(-1,0),colors.yellow),
+        ('LINEBELOW',(0,0),(-1,0),2,colors.black),
+        ('BACKGROUND',(0,0),(-1,0),colors.yellow)
+    ]
     row = ['#', 'Name', 'Verein', 'Gesamt']
     for jtype in 'TPD':
+        style.append(('LINEBEFORE', (len(row),0), (len(row),-1),0.5,colors.black))
         row.append(jtype)
         for judge in context['judges']:
             if judge.type == jtype:
+                style.append(('LINEBEFORE', (len(row),0), (len(row),-1),0.5,colors.black))
                 row.append(judge.possition)
     data.append(row)
+    h += 25
 
-    for start in context['starts']:
+    for cnt in context['result']['full']['full']:
+        start = context['result']['full']['T'][cnt].start
         row = []
         row.append(start.order)
         row.append(start.competitors_names()[0:32])
         row.append(start.competitors_clubs()[0:18])
-        row.append(f"{context['result']['full']['full'][start.id]['result'] * 100.0:.{2}f}%")
+        row.append(str(context['result']['full']['full'][cnt]['place']) +", "+ f"{context['result']['full']['full'][cnt]['result'] * 100.0:.{2}f}%")
         for jtype in 'TPD':
-            row.append(f"{context['result']['full'][jtype][start.id].values['result'] * 100.0:.{2}f}%")
+            row.append(f"{context['result']['full'][jtype][cnt].values['result'] * 100.0:.{2}f}%")
             for judge in context['judges']:
                 if judge.type == jtype:
-                    row.append(str(context['result'][jtype][judge.possition][start.id].values['place']) +" "+ f"{context['result'][jtype][judge.possition][start.id].values['result'] * 100.0:.{2}f}%")
+                    row.append(str(context['result'][jtype][judge.possition][cnt].values['place']) +", "+ f"{context['result'][jtype][judge.possition][cnt].values['result'] * 100.0:.{2}f}%")
         data.append(row)
+        h += 6
 
     t = Table(data, hAlign='LEFT')
-    t.setStyle(TableStyle([
-        ('BACKGROUND',(0,0),(-1,0),colors.yellow),
-        ('LINEBELOW',(0,0),(-1,0),2,colors.black),
-        ('BACKGROUND',(0,0),(-1,0),colors.yellow)
-    ]))
+    t.setStyle(TableStyle(style))
+    if h > 240:
+        h = 0
+        pagecontext.append(PageBreak())
+    pagecontext.append(Paragraph("Gesamt", sample_style_sheet['Heading2']))
     pagecontext.append(t)
 
-    c.multiBuild(pagecontext, canvasmaker=FooterDetail)
+    c.multiBuild(pagecontext, canvasmaker=FooterResult)
 
-class FooterDetail(canvas.Canvas):
+class FooterResult(canvas.Canvas):
     def __init__(self, *args, **kwargs):
         canvas.Canvas.__init__(self, *args, **kwargs)
         self.pages = []
@@ -116,8 +132,9 @@ class FooterDetail(canvas.Canvas):
         self.drawRightString(1150.551181102, 25, 'Ergebnis vom: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
         self.restoreState()
 
-def pdfresult(context):
-    c = SimpleDocTemplate(str(settings.BASE_DIR) + '/tmp/pdfresult.pdf', pagesize=A4, rightMargin=56, leftMargin=56, topMargin=56, bottomMargin=56)
+def pdfnotice(context):
+    c = SimpleDocTemplate(str(settings.BASE_DIR) + '/tmp/pdfnotice.pdf', pagesize=A4, rightMargin=56, leftMargin=56, topMargin=56, bottomMargin=56)
+    c.title = "Aushang "+context['competiton'].name
     pagecontext = []
     sample_style_sheet = getSampleStyleSheet()
     data =[]
@@ -152,9 +169,9 @@ def pdfresult(context):
     ]))
     pagecontext.append(t)
 
-    c.multiBuild(pagecontext, canvasmaker=FooterResult)
+    c.multiBuild(pagecontext, canvasmaker=FooterNotice)
 
-class FooterResult(canvas.Canvas):
+class FooterNotice(canvas.Canvas):
     def __init__(self, *args, **kwargs):
         canvas.Canvas.__init__(self, *args, **kwargs)
         self.pages = []
@@ -185,6 +202,7 @@ class FooterResult(canvas.Canvas):
 
 def pdfcertificate(context):
     c = canvas.Canvas(str(settings.BASE_DIR) + '/tmp/pdfcertificate.pdf', pagesize=A4)
+    c.setTitle("Urkunden "+context['competiton'].name)
 
     x = 105 * mm
     y = 200 * mm
@@ -208,6 +226,7 @@ def pdfcertificate(context):
 class pdfinput2019:
     def render(context):
         c = canvas.Canvas(str(settings.BASE_DIR) + '/tmp/pdfinput.pdf', pagesize=landscape(A4))
+        c.setTitle("Wertungsbögen "+context['competiton'].name)
 
         pages = math.ceil(context['starts'].count()/3)
         for judge in context['judges']:
@@ -434,6 +453,7 @@ class pdfinput2019:
 class pdfinput2018:
     def render(context):
         c = canvas.Canvas(str(settings.BASE_DIR) + '/tmp/pdfinput.pdf', pagesize=landscape(A4))
+        c.setTitle("Wertungsbögen "+context['competiton'].name)
 
         pages = math.ceil(context['starts'].count()/15)
         for judge in context['judges']:
