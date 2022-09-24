@@ -22,6 +22,11 @@ DISCIPLINE_COICES = (
 )
 
 
+class Config(models.Model):
+    key = models.CharField("Key", max_length=10)
+    value = models.CharField("Value", max_length=50)
+
+
 class Event(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField("Kürzel", help_text="Kürzel für die URL, nur Buchstaben, Zahlen und Striche, keine Leerzeichen, z.B. 'odm-steinach-2017'", unique=True)
@@ -37,9 +42,9 @@ class Competition(models.Model):
     name = models.CharField(max_length=100)
     minAge = models.IntegerField("minnimales Alter")
     maxAge = models.IntegerField("maximales Alter")
-    discipline = models.CharField(max_length=2, choices=DISCIPLINE_COICES)
+    discipline = models.CharField(max_length=2, choices=DISCIPLINE_COICES, default="FA")
 
-    event = models.ForeignKey(Event, on_delete=models.PROTECT)
+    event = models.ForeignKey(Event, on_delete=models.PROTECT, default=Config.objects.get(key='event_id').value)
 
     def __str__(self):
         return self.name
@@ -64,7 +69,7 @@ class Person(models.Model):
     city = models.CharField("Stadt", max_length=100, blank=True, null=True)
     country = models.CharField("Land", max_length=2, default="DE", blank=True, null=True)
 
-    event = models.ForeignKey(Event, on_delete=models.PROTECT)
+    event = models.ForeignKey(Event, on_delete=models.PROTECT, default=Config.objects.get(key='event_id').value)
 
     def get_age(self):
         today = date.today()
@@ -130,6 +135,3 @@ class Value(models.Model):
     class Meta:
         unique_together = ['start', 'judge']
 
-class Config(models.Model):
-    key = models.CharField("Key", max_length=10)
-    value = models.CharField("Value", max_length=50)

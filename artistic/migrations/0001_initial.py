@@ -20,7 +20,8 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100)),
                 ('minAge', models.IntegerField(verbose_name='minnimales Alter')),
                 ('maxAge', models.IntegerField(verbose_name='maximales Alter')),
-                ('discipline', models.CharField(choices=[('TR', 'Track: Racing'), ('RR', 'Road: Races'), ('MR', 'Mountain Unicycling: Races'), ('MC', 'Mountain Unicycling: Cyclocross'), ('FA', 'Freestyle: Artistic'), ('FS', 'Freestyle: Standard Skill'), ('FX', 'Freestyle: X-Style'), ('UF', 'Urban: Flatland'), ('US', 'Urban: Street'), ('UT', 'Urban: Trials'), ('UP', 'Urban: Speed Trials'), ('UJ', 'Urban: Jumps'), ('TH', 'Team Sports: Hockey'), ('TB', 'Team Sports: Basketball')], max_length=2)),
+                ('discipline', models.CharField(default='FA', choices=[('TR', 'Track: Racing'), ('RR', 'Road: Races'), ('MR', 'Mountain Unicycling: Races'), ('MC', 'Mountain Unicycling: Cyclocross'), ('FA', 'Freestyle: Artistic'), ('FS', 'Freestyle: Standard Skill'), ('FX', 'Freestyle: X-Style'), ('UF', 'Urban: Flatland'), ('US', 'Urban: Street'), ('UT', 'Urban: Trials'), ('UP', 'Urban: Speed Trials'), ('UJ', 'Urban: Jumps'), ('TH', 'Team Sports: Hockey'), ('TB', 'Team Sports: Basketball')], max_length=2)),
+                ('event', models.ForeignKey(default='1', on_delete=django.db.models.deletion.PROTECT, to='artistic.event')),
             ],
         ),
         migrations.CreateModel(
@@ -68,7 +69,7 @@ class Migration(migrations.Migration):
                 ('postcode', models.CharField(blank=True, max_length=20, null=True, verbose_name='PLZ')),
                 ('city', models.CharField(blank=True, max_length=100, null=True, verbose_name='Stadt')),
                 ('country', models.CharField(blank=True, default='DE', max_length=2, null=True, verbose_name='Land')),
-                ('event', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='artistic.event')),
+                ('event', models.ForeignKey(default='1', on_delete=django.db.models.deletion.PROTECT, to='artistic.event')),
             ],
         ),
         migrations.CreateModel(
@@ -80,7 +81,7 @@ class Migration(migrations.Migration):
                 ('time', models.DateTimeField(verbose_name='Zeit des Starts')),
                 ('isActive', models.BooleanField(default=True, verbose_name='Started?')),
                 ('competition', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='artistic.competition')),
-                ('people', models.ManyToManyField(to='artistic.person')),
+                ('people', models.ManyToManyField(blank=True, to='artistic.person')),
             ],
         ),
         migrations.AddField(
