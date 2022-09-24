@@ -2,6 +2,7 @@
 
  {% block body %}
 <div class="container">
+  <h3>{{ event.name }}</h3>
   <form action="{% url 'artistic:import' %}" method="post">
     {% csrf_token %}
     <div class="form-group">
