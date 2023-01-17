@@ -128,7 +128,7 @@ def free(request):
     })
 
 
-def inputpdf(request):
+def inputpdf(request, year = 2019):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
 
@@ -141,7 +141,7 @@ def inputpdf(request):
     s = Start.objects.filter(competition=c).order_by('order')
     j = Judge.objects.filter(competition=c)
 
-    pdfview.pdfinput2019.render({'competiton': c, 'starts': s, 'judges': j})
+    getattr(eval('pdfview.pdfinput'+str(year)), 'render')({'competiton': c, 'starts': s, 'judges': j})
 
     file_location = str(settings.BASE_DIR) + '/tmp/pdfinput.pdf'
 

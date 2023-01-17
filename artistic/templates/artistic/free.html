@@ -10,7 +10,7 @@
       {% endfor %}
     </select>
 
-    <a class="btn btn-sm btn-primary" href="{% url 'artistic:inputpdf' %}" target="_blank">Wertungsbögen</a>
+    <a class="btn btn-sm btn-primary" href="{% url 'artistic:inputpdf' '2019' %}" target="_blank">Wertungsbögen</a>
 
     {% if judges %}
       <table class="table">

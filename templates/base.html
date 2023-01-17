@@ -38,8 +38,12 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'admin:artistic_start_changelist' %}" target="_blank">Django Admin</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'artistic:inputpdf' %}" target="_blank">Wertungsbögen</a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="inputpdf" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Wertungsbögen</a>
+              <div class="dropdown-menu" aria-labelledby="inputpdf">
+                <a class="dropdown-item" href="{% url 'artistic:inputpdf' '2018' %}" target="_blank">alt</a>
+                <a class="dropdown-item" href="{% url 'artistic:inputpdf' '2019' %}" target="_blank">neu</a>
+              </div>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="admin" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Admin</a>
