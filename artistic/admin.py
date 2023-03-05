@@ -17,7 +17,7 @@ class EventAdmin(admin.ModelAdmin):
 class EventFilterModelAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         q = request.GET.copy()
-        q['event__id__exact'] = Config.objects.get(key='event_id').value
+        q['event__id__exact'] = Config.get_config_value('event_id')
         request.GET = q
         request.META['QUERY_STRING'] = request.GET.urlencode()
         return super(EventFilterModelAdmin,self).changelist_view(request, extra_context=extra_context)
@@ -46,7 +46,7 @@ class CompetitionFilterModelAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         if 'competition__id__exact' not in request.GET:
             q = request.GET.copy()
-            q['competition__id__exact'] = Config.objects.get(key='comp_id').value
+            q['competition__id__exact'] = Config.get_config_value('comp_id')
             request.GET = q
             request.META['QUERY_STRING'] = request.GET.urlencode()
         return super(CompetitionFilterModelAdmin,self).changelist_view(request, extra_context=extra_context)
@@ -56,7 +56,7 @@ class CompetitionFilter(admin.SimpleListFilter):
     parameter_name = 'competition__id__exact'
 
     def lookups(self, request, model_admin):
-        cl = set([c.competition for c in model_admin.model.objects.filter(competition__event__id=Config.objects.get(key='event_id').value)])
+        cl = set([c.competition for c in model_admin.model.objects.filter(competition__event__id=Config.get_config_value('event_id'))])
         print(cl)
         return [(c.id, c.name) for c in cl]
 

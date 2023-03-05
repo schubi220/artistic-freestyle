@@ -26,6 +26,13 @@ class Config(models.Model):
     key = models.CharField("Key", max_length=10)
     value = models.CharField("Value", max_length=50)
 
+    @staticmethod
+    def get_config_value(key):
+        try:
+            return Config.objects.get(key=key).value
+        except:
+            return False
+
 
 class Event(models.Model):
     name = models.CharField(max_length=100)
@@ -44,7 +51,7 @@ class Competition(models.Model):
     maxAge = models.IntegerField("maximales Alter")
     discipline = models.CharField(max_length=2, choices=DISCIPLINE_COICES, default="FA")
 
-    event = models.ForeignKey(Event, on_delete=models.PROTECT, default=Config.objects.get(key='event_id').value)
+    event = models.ForeignKey(Event, on_delete=models.PROTECT, default=Config.get_config_value('event_id'))
 
     def __str__(self):
         return self.name
@@ -69,7 +76,7 @@ class Person(models.Model):
     city = models.CharField("Stadt", max_length=100, blank=True, null=True)
     country = models.CharField("Land", max_length=2, default="DE", blank=True, null=True)
 
-    event = models.ForeignKey(Event, on_delete=models.PROTECT, default=Config.objects.get(key='event_id').value)
+    event = models.ForeignKey(Event, on_delete=models.PROTECT, default=Config.get_config_value('event_id'))
 
     def get_age(self):
         today = date.today()

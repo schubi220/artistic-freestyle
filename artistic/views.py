@@ -78,7 +78,7 @@ def free(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
 
-    cl = Competition.objects.filter(event__id=Config.objects.get(key='event_id').value)
+    cl = Competition.objects.filter(event__id=Config.get_config_value('event_id'))
     if not cl:
         messages.warning(request, 'Keine Altersklasse vorhanden.')
         return HttpResponseRedirect(reverse('admin:artistic_competition_add'))
@@ -101,7 +101,7 @@ def free(request):
     if actcompetition:
         request.session['actcompetition'] = actcompetition
     try:
-        c = Competition.objects.get(id=request.session.get('actcompetition', Config.objects.get(key='comp_id').value), event__id=Config.objects.get(key='event_id').value)
+        c = Competition.objects.get(id=request.session.get('actcompetition', Config.get_config_value('comp_id')), event__id=Config.get_config_value('event_id'))
     except:
         c = cl[0]
         s = Config.objects.get(key='comp_id')
@@ -154,7 +154,7 @@ def select(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
 
-    cl = Competition.objects.filter(event__id=Config.objects.get(key='event_id').value)
+    cl = Competition.objects.filter(event__id=Config.get_config_value('event_id'))
 
     return render(request, "artistic/select.html", {
         'competitions': cl,
@@ -222,7 +222,7 @@ def read_csv(request):
     text = ''
 
     try:
-        e = Event.objects.get(id=Config.objects.get(key='event_id').value)
+        e = Event.objects.get(id=Config.get_config_value('event_id'))
     except Event.DoesNotExist:
         messages.warning(request, 'Keine Veranstaltung vorhanden.')
         return HttpResponseRedirect(reverse('admin:artistic_event_add'))
@@ -238,7 +238,7 @@ def read_csv(request):
             if not data[0] or 99 < len(data[0]):
                 messages.warning(request, data[2]+'#'+data[4]+' Altersklasse: '+data[0])
                 continue
-            c, created = Competition.objects.get_or_create(name__iexact=data[0], defaults={'name':data[0], 'minAge':0, 'maxAge':0, 'discipline':"FA", 'event':e})
+            c, created = Competition.objects.get_or_create(name__iexact=data[0], event=e, defaults={'name':data[0], 'minAge':0, 'maxAge':0, 'discipline':"FA"})
 
             # anlegen des Starts
             data[7] = date+' '+data[7].strip()
@@ -282,7 +282,7 @@ def choose_event(request):
         try:
             e = Event.objects.get(id=actevent)
             s = Config.objects.get(key='event_id')
-            s.value = e.id
+            s.value = actevent
             s.save()
             messages.success(request, 'Varanstaltung: '+e.name+' ausgewählt.')
         except Event.DoesNotExist:
@@ -313,13 +313,13 @@ def displaySettings(request):
         s.value = actstart
         s.save()
 
-    cl = Competition.objects.filter(event__id=Config.objects.get(key='event_id').value)
+    cl = Competition.objects.filter(event__id=Config.get_config_value('event_id'))
     if not cl:
         messages.warning(request, 'Keine Altersklasse vorhanden.')
         return HttpResponseRedirect(reverse('admin:artistic_competition_add'))
 
     try:
-        c = Competition.objects.get(id=request.session.get('actcompetition', Config.objects.get(key='comp_id').value))
+        c = Competition.objects.get(id=request.session.get('actcompetition', Config.get_config_value('comp_id')))
     except:
         c = cl[0]
 
@@ -338,10 +338,10 @@ def displayMonitor(request):
     return render(request, "artistic/displayMonitor.html")
 
 def displayMode(request):
-    return HttpResponse(Config.objects.get(key='start_id').value)
+    return HttpResponse(Config.get_config_value('start_id'))
 
 def displayPushPull(request):
-    act = Config.objects.get(key='start_id').value
+    act = Config.get_config_value('start_id')
     s = Start.objects.filter(id__gte=act).order_by('time')[:10]
 
     send = []

@@ -13,4 +13,4 @@ def percent(value: float, precision: int=0):
 
 @register.simple_tag
 def eventSlug():
-    return Event.objects.get(id=Config.objects.get(key='event_id').value).slug
+    return Event.objects.get(id=Config.get_config_value('event_id')).slug

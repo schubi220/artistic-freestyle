@@ -127,7 +127,7 @@ class FooterResult(canvas.Canvas):
         self.line(595.275590551, 841.8897637795277, 595.275590551, 826.8897637795277)
         self.setStrokeColorRGB(0, 0, 0)
         self.setFont("Helvetica", 6)
-        self.drawString(20, 25, Event.objects.get(id=Config.objects.get(key='event_id').value).name)
+        self.drawString(20, 25, Event.objects.get(id=Config.get_config_value('event_id')).name)
         self.drawCentredString(595.275590551, 25, "Seite %s von %s" % (self._pageNumber, page_count))
         self.drawRightString(1150.551181102, 25, 'Ergebnis vom: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
         self.restoreState()
@@ -140,7 +140,7 @@ def pdfnotice(context):
     data =[]
 
     sample_style_sheet['Heading1'].alignment = 1
-    pagecontext.append(Paragraph(Event.objects.get(id=Config.objects.get(key='event_id').value).name, sample_style_sheet['Heading1']))
+    pagecontext.append(Paragraph(Event.objects.get(id=Config.get_config_value('event_id')).name, sample_style_sheet['Heading1']))
     pagecontext.append(Paragraph(context['competiton'].name, sample_style_sheet['Heading2']))
 
     row = ['Platz', 'Name', 'Verein', 'Titel']
@@ -194,7 +194,7 @@ class FooterNotice(canvas.Canvas):
         self.line(0, 420.94488189, 15, 420.94488189)
         self.setStrokeColorRGB(0, 0, 0)
         self.setFont("Helvetica", 6)
-        self.drawString(20, 25, Event.objects.get(id=Config.objects.get(key='event_id').value).name)
+        self.drawString(20, 25, Event.objects.get(id=Config.get_config_value('event_id')).name)
         self.drawCentredString(297.637795276, 25, "Seite %s von %s" % (self._pageNumber, page_count))
         self.drawRightString(575.2755905511812, 25, 'Ergebnis vom: '+datetime.datetime.now().strftime("%d.%m.%Y %H:%M"))
         self.restoreState()

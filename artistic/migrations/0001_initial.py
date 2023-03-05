@@ -14,6 +14,17 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Event',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=100)),
+                ('slug', models.SlugField(help_text="Kürzel für die URL, nur Buchstaben, Zahlen und Striche, keine Leerzeichen, z.B. 'odm-steinach-2017'", unique=True, verbose_name='Kürzel')),
+                ('firstDay', models.DateField(verbose_name='Von')),
+                ('lastDay', models.DateField(verbose_name='Bis')),
+                ('description', models.TextField(blank=True, verbose_name='beschreibung')),
+            ],
+        ),
+        migrations.CreateModel(
             name='Competition',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -30,17 +41,6 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('key', models.CharField(max_length=10, verbose_name='Key')),
                 ('value', models.CharField(max_length=50, verbose_name='Value')),
-            ],
-        ),
-        migrations.CreateModel(
-            name='Event',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('slug', models.SlugField(help_text="Kürzel für die URL, nur Buchstaben, Zahlen und Striche, keine Leerzeichen, z.B. 'odm-steinach-2017'", unique=True, verbose_name='Kürzel')),
-                ('firstDay', models.DateField(verbose_name='Von')),
-                ('lastDay', models.DateField(verbose_name='Bis')),
-                ('description', models.TextField(blank=True, verbose_name='beschreibung')),
             ],
         ),
         migrations.CreateModel(
