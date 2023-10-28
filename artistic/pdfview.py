@@ -19,48 +19,6 @@ def pdfresult(context):
     h = 6
     sample_style_sheet['Heading2'].spaceBefore = 25
 
-    for jtype in 'TPD':
-        data =[]
-        style = [
-            ('BACKGROUND',(0,0),(-1,0),colors.yellow),
-            ('LINEBELOW',(0,0),(-1,0),2,colors.black),
-            ('BACKGROUND',(0,0),(-1,0),colors.yellow)
-        ]
-        row = ['#', 'Name', 'Verein']
-        row.append(jtype)
-        for judge in context['judges']:
-            if judge.type == jtype:
-                style.append(('LINEBEFORE', (len(row),0), (len(row),-1),0.5,colors.black))
-                row.append(judge.possition)
-                row.append('1')
-                row.append('2')
-                row.append('3')
-        data.append(row)
-        h += 25
-
-        for start in context['starts']:
-            row = []
-            row.append(start.order)
-            row.append(start.competitors_names()[0:32])
-            row.append(start.competitors_clubs()[0:18])
-            row.append(f"{context['result']['full'][jtype][start.id].values['result'] * 100.0:.{2}f}%")
-            for judge in context['judges']:
-                if judge.type == jtype:
-                    row.append(str(context['result'][jtype][judge.possition][start.id].values['place']) +", "+ f"{context['result'][jtype][judge.possition][start.id].values['result'] * 100.0:.{2}f}%")
-                    row.append(context['result'][jtype][judge.possition][start.id].values.get('0'))
-                    row.append(context['result'][jtype][judge.possition][start.id].values.get('1'))
-                    row.append(context['result'][jtype][judge.possition][start.id].values.get('2'))
-            data.append(row)
-            h += 6
-
-        t = Table(data, hAlign='LEFT')
-        t.setStyle(TableStyle(style))
-        if h > 240:
-            h = 0
-            pagecontext.append(PageBreak())
-        pagecontext.append(Paragraph([i[1] for i in Judge.JUDGETYPE_CHOICES if i[0] == jtype][0], sample_style_sheet['Heading2']))
-        pagecontext.append(t)
-
     # Gesamttabelle
     data =[]
     style = [
@@ -101,6 +59,48 @@ def pdfresult(context):
         pagecontext.append(PageBreak())
     pagecontext.append(Paragraph("Gesamt", sample_style_sheet['Heading2']))
     pagecontext.append(t)
+
+    for jtype in 'TPD':
+        data =[]
+        style = [
+            ('BACKGROUND',(0,0),(-1,0),colors.yellow),
+            ('LINEBELOW',(0,0),(-1,0),2,colors.black),
+            ('BACKGROUND',(0,0),(-1,0),colors.yellow)
+        ]
+        row = ['#', 'Name', 'Verein']
+        row.append(jtype)
+        for judge in context['judges']:
+            if judge.type == jtype:
+                style.append(('LINEBEFORE', (len(row),0), (len(row),-1),0.5,colors.black))
+                row.append(judge.possition)
+                row.append('1')
+                row.append('2')
+                row.append('3')
+        data.append(row)
+        h += 25
+
+        for start in context['starts']:
+            row = []
+            row.append(start.order)
+            row.append(start.competitors_names()[0:32])
+            row.append(start.competitors_clubs()[0:18])
+            row.append(f"{context['result']['full'][jtype][start.id].values['result'] * 100.0:.{2}f}%")
+            for judge in context['judges']:
+                if judge.type == jtype:
+                    row.append(str(context['result'][jtype][judge.possition][start.id].values['place']) +", "+ f"{context['result'][jtype][judge.possition][start.id].values['result'] * 100.0:.{2}f}%")
+                    row.append(context['result'][jtype][judge.possition][start.id].values.get('0'))
+                    row.append(context['result'][jtype][judge.possition][start.id].values.get('1'))
+                    row.append(context['result'][jtype][judge.possition][start.id].values.get('2'))
+            data.append(row)
+            h += 6
+
+        t = Table(data, hAlign='LEFT')
+        t.setStyle(TableStyle(style))
+        if h > 240:
+            h = 10
+            pagecontext.append(PageBreak())
+        pagecontext.append(Paragraph([i[1] for i in Judge.JUDGETYPE_CHOICES if i[0] == jtype][0], sample_style_sheet['Heading2']))
+        pagecontext.append(t)
 
     c.multiBuild(pagecontext, canvasmaker=FooterResult)
 
@@ -205,20 +205,21 @@ def pdfcertificate(context):
     c.setTitle("Urkunden "+context['competiton'].name)
 
     x = 105 * mm
-    y = 200 * mm
+    y = 120 * mm
     for cnt in context['result']['full']['full']:
         start = context['result']['full']['T'][cnt].start
-        c.setFont("Helvetica-Bold", 24)
-        c.drawCentredString(x,y, start.competitors_names())
-        c.setFont("Helvetica", 16)
-        c.drawCentredString(x,y-28.34645669291339, start.competitors_clubs())
-        c.setFont("Helvetica-Bold", 20)
-        c.drawCentredString(x,y-79.37007874015748, str(context['result']['full']['full'][cnt]['place']) + '. Platz')
-        c.setFont("Helvetica", 16)
-        c.drawCentredString(x,y-124.7244094488189, context['competiton'].name)
-        c.setFont("Helvetica-Bold", 20)
-        c.drawCentredString(x,y-147.40157480314963, start.info['titel'])
-        c.showPage()
+        for i in range(0, start.count_competitors()):
+            c.setFont("Helvetica-Bold", 24)
+            c.drawCentredString(x,y, start.competitors_names())
+            c.setFont("Helvetica", 16)
+            c.drawCentredString(x,y-28.34645669291339, start.competitors_clubs())
+            c.setFont("Helvetica-Bold", 20)
+            c.drawCentredString(x,y-79.37007874015748, str(context['result']['full']['full'][cnt]['place']) + '. Platz')
+            c.setFont("Helvetica", 16)
+            c.drawCentredString(x,y-124.7244094488189, context['competiton'].name)
+            c.setFont("Helvetica-Bold", 20)
+            c.drawCentredString(x,y-147.40157480314963, start.info['titel'])
+            c.showPage()
 
     c.save()
     
@@ -253,7 +254,7 @@ class pdfinput2019:
         c.setLineWidth(0.25)
         c.line(420.94488189, 595.275590551181, 420.94488189, 580.275590551181)
         c.setFont('Helvetica-Bold', 14)
-        c.drawString(9*mm, 200*mm, 'Technik')
+        c.drawString(9*mm, 200*mm, judge.get_type_display())
         c.setFont('Helvetica', 10)
         c.drawString(140*mm, 200*mm, 'Disziplin: ' + judge.competition.name)
         c.drawString(195*mm, 200*mm, 'Code: ' + judge.code)
