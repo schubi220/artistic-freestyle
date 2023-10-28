@@ -36,8 +36,10 @@
                 {% else %}
                   <button type="submit" name="judgeid" value="{{ judge.id }}" class="btn btn-sm btn-danger">Sperren</button>
                 {% endif %}
+                {% if perms.artistic.change_value %}
                 <button type="submit" name="judgecorrect" value="{{ judge.id }}" class="btn btn-sm btn-primary">Wertung bearbeiten</button>
-                <a class="btn btn-sm btn-secondary" href="{% url 'admin:artistic_judge_change' judge.id %}?next={{ request.path }}">bearbeiten</a>
+                  <a class="btn btn-sm btn-secondary" href="{% url 'admin:artistic_judge_change' judge.id %}?next={{ request.path }}">Judge bearbeiten</a>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}

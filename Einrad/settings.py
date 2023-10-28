@@ -51,6 +51,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'Einrad.urls'
+LOGIN_REDIRECT_URL = "artistic:free"
+LOGOUT_REDIRECT_URL = "artistic:input"
 
 TEMPLATES = [
     {
