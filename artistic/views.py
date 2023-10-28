@@ -263,9 +263,12 @@ def read_csv(request):
             for person in people:
                 club = data[6].split('/')[people.index(person)].strip() if len(people) > 1 and '/' in data[6] else data[6].strip()
                 person = person.split(' ', 1)
+                if len(person) != 2:
+                    messages.warning(request, data[0]+'#'+data[2]+' Kein Nachname: '+data[6])
+                    person[1] = ""
                 p, created = Person.objects.get_or_create(firstname=person[0].strip(), lastname=person[1].strip(), event=e, defaults={'gender':'d', 'club':club, 'dateofbirth':datetime.strptime('0', '%H')})
                 s.people.add(p)
-            text += s.order + '# ' + s.info['titel'] + '\r\n'
+            text += 'x\t' + s.order + '# ' + s.info['titel'] + '\r\n'
 
     return render(request, "artistic/import.html", {
         'text': text,
