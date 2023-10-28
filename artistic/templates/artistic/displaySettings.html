@@ -36,16 +36,22 @@
           </tbody>
         </table>
         <button type="submit" class="btn btn-success" name="actstart" value="-1">Ausschalten</button>
+        </div>
     	</div>
-    	<div class="col-md-4">
+    	<div class="col-lg-4">
     		<div class="alert alert-secondary" role="alert">
-    			<div class="text-center">
-            <p id="currentCat"></p>
-            <h1 id="currentName"></h1>
-            <p id="currentClub"></p>
-    				<p>&nbsp;</p>
-            <p id="currentAct"></p>
-          </div>
+    		  <div class="text-center">
+                <h1 id="uhr"></h1>
+              </div>
+    		</div>
+    		<div class="alert alert-secondary" role="alert">
+    		  <div class="text-center">
+                <p id="currentCat"></p>
+                <h1 id="currentName"></h1>
+                <p id="currentClub"></p>
+        				<p>&nbsp;</p>
+                <p id="currentAct"></p>
+              </div>
     		</div>
     	</div>
     </div>
@@ -103,9 +109,25 @@ Der erste Eintrag ist der aktuelle Starter, die weiteren Einträge sind die komm
 		}
 	}
 
+    function uhrzeit() {
+      var jetzt = new Date(),
+          h = jetzt.getHours(),
+          m = jetzt.getMinutes(),
+          s = jetzt.getSeconds();
+      m = fuehrendeNull(m);
+      s = fuehrendeNull(s);
+      document.getElementById('uhr').innerText = h + ':' + m + ':' + s;
+    }
+  
+  function fuehrendeNull(zahl) {
+    zahl = (zahl < 10 ? '0' : '' )+ zahl;  
+    return zahl;
+  }
+
   $( document ).ready(function() {
 		isSleep();
 		window.setInterval(isSleep,5000);
+		window.setInterval(uhrzeit,500);
 	});
 </script>
 {% endblock %}
