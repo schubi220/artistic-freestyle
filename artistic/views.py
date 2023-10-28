@@ -17,7 +17,7 @@ def code(request):
     code = request.POST.get('code', '')
     if code:
         try:
-            j = Judge.objects.get(code__iexact=code)
+            j = Judge.objects.get(code__iexact=code.strip())
             request.session['accesscode'] = j.code
             if not j.isActive:
                 j.isActive = True
@@ -116,7 +116,7 @@ def free(request):
             j.save()
             j = Judge(name='', possition='P'+str(i), type='P', competition=c)
             j.save()
-        for i in [1,2]:
+        for i in range(1,3):
             j = Judge(name='', possition='D'+str(i), type='D', competition=c)
             j.save()
 
@@ -264,9 +264,12 @@ def read_csv(request):
             for person in people:
                 club = data[6].split('/')[people.index(person)].strip() if len(people) > 1 and '/' in data[6] else data[6].strip()
                 person = person.split(' ', 1)
+                if len(person) != 2:
+                    messages.warning(request, data[0]+'#'+data[2]+' Kein Nachname: '+data[6])
+                    person[1] = ""
                 p, created = Person.objects.get_or_create(firstname=person[0].strip(), lastname=person[1].strip(), event=e, defaults={'gender':'d', 'club':club, 'dateofbirth':datetime.strptime('0', '%H')})
                 s.people.add(p)
-            text += s.order + '# ' + s.info['titel'] + '\r\n'
+            text += 'x\t' + s.order + '# ' + s.info['titel'] + '\r\n'
 
     return render(request, "artistic/import.html", {
         'text': text,
@@ -343,9 +346,18 @@ def displayMode(request):
 
 def displayPushPull(request):
     act = Config.get_config_value('start_id')
-    s = Start.objects.filter(id__gte=act).order_by('time')[:10]
-
+    s = Start.objects.get(id=act)
     send = []
+    send.append({
+        'strnbr': s.order,
+        'actors': s.competitors_names(),
+        'titel': s.info['titel'],
+        'club': s.competitors_clubs(),
+        'cat': s.competition.name,
+        'time': s.time.strftime("%H:%M"),
+    })
+
+    s = Start.objects.filter(time__gt=s.time).order_by('time')[:10]
     for start in s:
         send.append({
             'strnbr': start.order,

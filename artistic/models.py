@@ -103,6 +103,13 @@ class Start(models.Model):
         if len(people) > 2:
             return str(len(people))+' Fahrer'
         return " und ".join(str(x) for x in people)
+    def count_competitors(self):
+        if not self.id:
+            return ''
+        people = self.people.all()
+        if 'cnt' in self.info:
+            return self.info['cnt']
+        return len(people)
     def competitors_clubs(self):
         clubs = ""
         for x in self.people.all():
@@ -115,7 +122,7 @@ class Start(models.Model):
 
 
 def generate_code():
-    return "".join(random.choice(string.ascii_lowercase+string.digits) for i in range(8))
+    return "".join(random.choice(string.ascii_lowercase) for i in range(6))
 
 class Judge(models.Model):
     JUDGETYPE_CHOICES = (
