@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block stylesheets %}
+   <meta http-equiv="refresh" content="60" >
+{% endblock %}
+
 {% block body %}
   <form action="{% url 'artistic:free' %}" method="post">
     {% csrf_token %}
@@ -36,8 +40,10 @@
                 {% else %}
                   <button type="submit" name="judgeid" value="{{ judge.id }}" class="btn btn-sm btn-danger">Sperren</button>
                 {% endif %}
-                <button type="submit" name="judgecorrect" value="{{ judge.id }}" class="btn btn-sm btn-primary">Wertung bearbeiten</button>
-                <a class="btn btn-sm btn-secondary" href="{% url 'admin:artistic_judge_change' judge.id %}?next={{ request.path }}">bearbeiten</a>
+                {% if perms.artistic.change_value %}
+                  <button type="submit" name="judgecorrect" value="{{ judge.id }}" class="btn btn-sm btn-primary">Wertung bearbeiten</button>
+                  <a class="btn btn-sm btn-secondary" href="{% url 'admin:artistic_judge_change' judge.id %}?next={{ request.path }}">Judge bearbeiten</a>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}

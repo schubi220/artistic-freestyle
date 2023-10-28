@@ -17,7 +17,7 @@ def code(request):
     code = request.POST.get('code', '')
     if code:
         try:
-            j = Judge.objects.get(code__iexact=code)
+            j = Judge.objects.get(code__iexact=code.strip())
             request.session['accesscode'] = j.code
             if not j.isActive:
                 j.isActive = True
@@ -76,7 +76,7 @@ def input(request):
 
 def free(request):
     if not request.user.is_authenticated:
-        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+        return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.path))
 
     cl = Competition.objects.filter(event__id=Config.get_config_value('event_id'))
     if not cl:
@@ -90,7 +90,8 @@ def free(request):
         j.save()
 
     id = request.POST.get('judgecorrect', False)
-    if id:
+    if id and request.user.has_perm('artistic.change_value'):
+    #if id:
         j = Judge.objects.get(id=id)
         j.isActive = True
         j.save()
@@ -115,7 +116,7 @@ def free(request):
             j.save()
             j = Judge(name='', possition='P'+str(i), type='P', competition=c)
             j.save()
-        for i in [1,2]:
+        for i in range(1,3):
             j = Judge(name='', possition='D'+str(i), type='D', competition=c)
             j.save()
 
@@ -130,7 +131,7 @@ def free(request):
 
 def inputpdf(request, year = 2019):
     if not request.user.is_authenticated:
-        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+        return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.path))
 
     try:
         c = Competition.objects.get(id=request.session.get('actcompetition'))
@@ -151,8 +152,8 @@ def inputpdf(request, year = 2019):
 
 
 def select(request):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+    if not request.user.is_staff:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.path))
 
     cl = Competition.objects.filter(event__id=Config.get_config_value('event_id'))
 
@@ -163,7 +164,7 @@ def select(request):
 
 def rate(request):
     if not request.user.is_authenticated:
-        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+        return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.path))
 
     try:
         c = Competition.objects.get(id=request.session.get('actcompetition'))
@@ -214,8 +215,8 @@ def wrappdf(request, filename):
 
 
 def read_csv(request):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+    if not request.user.is_staff:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.path))
 
     csvfile = request.POST.get('csvfile', False)
     date = request.POST.get('date')
@@ -277,8 +278,8 @@ def read_csv(request):
 
 
 def choose_event(request):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+    if not request.user.is_staff:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.path))
 
     actevent = request.POST.get('actevent', False)
     if actevent:
@@ -304,7 +305,7 @@ def choose_event(request):
 
 def displaySettings(request):
     if not request.user.is_authenticated:
-        return HttpResponseRedirect('%s?next=%s' % (reverse('admin:login'), request.path))
+        return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.path))
 
     actcompetition = request.POST.get('actcompetition', False)
     if actcompetition:
@@ -345,9 +346,18 @@ def displayMode(request):
 
 def displayPushPull(request):
     act = Config.get_config_value('start_id')
-    s = Start.objects.filter(id__gte=act).order_by('time')[:10]
-
+    s = Start.objects.get(id=act)
     send = []
+    send.append({
+        'strnbr': s.order,
+        'actors': s.competitors_names(),
+        'titel': s.info['titel'],
+        'club': s.competitors_clubs(),
+        'cat': s.competition.name,
+        'time': s.time.strftime("%H:%M"),
+    })
+
+    s = Start.objects.filter(time__gt=s.time).order_by('time')[:10]
     for start in s:
         send.append({
             'strnbr': start.order,

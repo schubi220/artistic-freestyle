@@ -2,7 +2,28 @@
  {% load main_extra %}
  {% load l10n %}
 
- {% block body %}
+{% block stylesheets %}
+   <style>
+.overlay {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background: rgba(0, 0, 0, 0.7);
+	transition: opacity 500ms;
+	visibility: hidden;
+	opacity: 0;
+}
+.overlay:target {
+	visibility: visible;
+	opacity: 1;
+	z-index: 1;
+}
+    </style>
+{% endblock %}
+
+{% block body %}
   <form action="{% url 'artistic:input' %}" method="post">
     {% csrf_token %}
     <h2>Judge: {{ judge.possition }}, Altersklasse: {{ judge.competition.name }}</h2>
@@ -51,8 +72,22 @@
 
     <div class="form-group row">
       <div class="col-sm-10">
-        <button type="submit" name="save" class="btn btn-primary">Speichern</button>
-        <button type="submit" name="ready" class="btn btn-primary">Fertig</button>
+        <div class="btn-group" role="group">
+          <button type="submit" name="save" class="btn btn-primary">Speichern</button>
+          <a class="btn btn-danger" href="#popup1">Wertung absenden</a>
+        </div>
+      </div>
+    </div>
+    <div id="popup1" class="overlay">
+      <div class="card" style="margin: 15% auto; width: 18rem; transition: all 5s ease-in-out;">
+        <div class="card-body">
+          <h5 class="card-title">Wertung fertig?</h5>
+          <p class="card-text">Hasst du deine Wertung für die aktuelle Altersklasse vollständig Eingegeben?</p>
+          <div class="btn-group" role="group">
+            <button type="submit" name="ready" class="btn btn-primary">Fertig</button>
+            <a class="btn btn-danger" href="#">zurück zur Eingabe</a>
+          </div>
+        </div>
       </div>
     </div>
   </form>
