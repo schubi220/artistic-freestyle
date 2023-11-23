@@ -106,19 +106,20 @@
 		xhttp.open("GET", "{% url 'artistic:displayMode' %}", true);
 		xhttp.send();
 	}
-/* Funktion zum Umsetzung des Modus: Anzeigen der WordClock oder der Startliste */
   var oldmode = 0;
 	function setMode(mode){
 		if (mode != oldmode) {
-      $( "#start" + mode ).addClass("table-info");
-      $( "#start" + oldmode ).removeClass("table-info");
+      if (document.getElementById( "start" + mode ) != null)
+        document.getElementById( "start" + mode ).classList.add("table-info");
+      if (document.getElementById( "start" + oldmode ) != null)
+        document.getElementById( "start" + oldmode ).classList.remove("table-info");
 			oldmode = mode;
 		}
 	}
 
-  $( document ).ready(function() {
+  function init(){
 		isSleep();
-		window.setInterval(isSleep,30000);
-	});
+		window.setInterval(isSleep,5000);
+	}
 </script>
 {% endblock %}

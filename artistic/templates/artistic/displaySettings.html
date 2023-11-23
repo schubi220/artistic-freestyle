@@ -12,7 +12,7 @@
 
     <div class="row">
       <div class="col-lg-8">
-       <div style="overflow: auto;height: 80vh;">
+       <div style="height: 75vh; overflow: auto;">
         <table class="table">
           <thead>
             <tr>
@@ -102,8 +102,10 @@ Der erste Eintrag ist der aktuelle Starter, die weiteren Einträge sind die komm
   var oldmode = 0;
 	function setMode(mode){
 		if (mode != oldmode) {
-      $( "#start" + mode ).addClass("table-info");
-      $( "#start" + oldmode ).removeClass("table-info");
+      if (document.getElementById( "start" + mode ) != null)
+        document.getElementById( "start" + mode ).classList.add("table-info");
+      if (document.getElementById( "start" + oldmode ) != null)
+        document.getElementById( "start" + oldmode ).classList.remove("table-info");
 			pull();
 			oldmode = mode;
 		}
@@ -124,10 +126,10 @@ Der erste Eintrag ist der aktuelle Starter, die weiteren Einträge sind die komm
     return zahl;
   }
 
-  $( document ).ready(function() {
+  function init(){
 		isSleep();
 		window.setInterval(isSleep,5000);
 		window.setInterval(uhrzeit,500);
-	});
+	}
 </script>
 {% endblock %}
