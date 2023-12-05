@@ -19,7 +19,7 @@ def code(request):
         try:
             j = Judge.objects.get(code__iexact=code.strip())
             request.session['accesscode'] = j.code
-            if not j.isActive:
+            if not (j.isActive or j.isReady):
                 j.isActive = True
                 j.save()
                 return HttpResponseRedirect(reverse('artistic:input'))
@@ -60,6 +60,8 @@ def input(request):
 
         if 'ready' in request.POST:
             del request.session['accesscode']
+            j.isReady = True
+            j.save()
             messages.success(request, 'Wertung erfolgreich abgegeben, Danke :)')
             return HttpResponseRedirect(reverse('artistic:code'))
         return HttpResponseRedirect(reverse('artistic:input'))
@@ -87,6 +89,8 @@ def free(request):
     if id:
         j = Judge.objects.get(id=id)
         j.isActive = not j.isActive
+        if not j.isActive:
+            j.isReady = False
         j.save()
 
     id = request.POST.get('judgecorrect', False)

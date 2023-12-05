@@ -36,7 +36,11 @@
               <td>{{ judge.code }}</td>
               <td>
                 {% if judge.isActive %}
-                  <button type="submit" name="judgeid" value="{{ judge.id }}" class="btn btn-sm btn-warning">Freigeben</button>
+                  {% if judge.isReady %}
+                    <button type="submit" name="judgeid" value="{{ judge.id }}" class="btn btn-sm btn-success">Freigeben</button>
+                  {% else %}
+                      <button type="submit" name="judgeid" value="{{ judge.id }}" class="btn btn-sm btn-warning">Freigeben</button>
+                  {% endif %}
                 {% else %}
                   <button type="submit" name="judgeid" value="{{ judge.id }}" class="btn btn-sm btn-danger">Sperren</button>
                 {% endif %}

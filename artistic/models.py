@@ -136,6 +136,7 @@ class Judge(models.Model):
     competition = models.ForeignKey(Competition, on_delete=models.PROTECT)
     code = models.CharField(max_length=8, unique=True, default=generate_code)
     isActive = models.BooleanField("Eingeloggt?", default=False)
+    isReady = models.BooleanField("Fertig?", default=False)
 
     def __str__(self):
         return str(self.possition) + '# ' + self.name
