@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'artistic.apps.ArtisticConfig',
     'bootstrap5',
+    'django_apscheduler',
 ]
 
 MIDDLEWARE = [

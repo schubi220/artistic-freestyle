@@ -20,6 +20,7 @@
               <th>Name</th>
               <th>Verein</th>
               <th>Titel</th>
+              <th>Zeit</th>
               <th></th>
             </tr>
           </thead>
@@ -30,12 +31,15 @@
                 <td>{{ start.competitors_names }}</td>
                 <td>{{ start.competitors_clubs }}</td>
                 <td>{{ start.info.titel }}</td>
-                <td><button type="submit" name="actstart" value="{{ start.id }}" class="btn btn-sm btn-primary">Wählen</button></td>
+                <td>{{ start.time | date:"H:i" }}</td>
+                <td><button type="submit" name="actstart" value="{{ start.id }}" class="btn btn-sm btn-primary">Started</button></td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
         <button type="submit" class="btn btn-success" name="actstart" value="-1">Ausschalten</button>
+        <button type="submit" class="btn btn-success" name="timetrack" value="0">erster Zeitplan</button>
+        <button type="submit" class="btn btn-success" name="timetrack" value="1">Verspäting berechnen</button>
         </div>
     	</div>
     	<div class="col-lg-4">

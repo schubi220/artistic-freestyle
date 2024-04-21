@@ -7,6 +7,7 @@ from django.contrib import messages
 from artistic.resultCalculators import FA # else won't find it later
 from artistic import pdfview, resultCalculators
 from django.conf import settings
+from pytz import timezone
 from datetime import datetime
 import re
 from django.db.models import Q
@@ -251,7 +252,9 @@ def read_csv(request):
             if not re.match("^[0-9]{2}.[0-9]{2}.[0-9]{4} [0-9]{1,2}:[0-9]{2}$", data[7]) or not data[2].isnumeric():
                 messages.warning(request, data[2]+'# Start: '+data[4])
                 continue
-            s = Start(order=data[2], competition=c, info={'titel': data[4].strip()}, time=datetime.strptime(data[7], '%d.%m.%Y %H:%M'))
+
+            time = datetime.strptime(data[7], '%d.%m.%Y %H:%M').astimezone(timezone(settings.TIME_ZONE))
+            s = Start(order=data[2], competition=c, info={'titel': data[4].strip()}, scheduled_time=time)
             if int(data[1]) > 2:
                 s.info['cnt'] = int(data[1])
                 s.info['club'] = data[6].strip()
@@ -315,8 +318,19 @@ def displaySettings(request):
     if actcompetition:
         request.session['actcompetition'] = actcompetition
 
+    timetrack = request.POST.get('timetrack', False)
+    if timetrack:
+        s = Config.objects.get(key='timetrack')
+        s.value = timetrack
+        s.save()
+
     actstart = request.POST.get('actstart', False)
     if actstart:
+        s = Start.objects.get(id=actstart)
+        s.calculated_time = datetime.now().astimezone(timezone(settings.TIME_ZONE))
+        print("Scheduled Task (Startzeit):  " + s.calculated_time.strftime("%H:%M") + str(s.calculated_time.tzinfo))
+        s.save()
+        print(s.calculated_time.tzinfo)
         s = Config.objects.get(key='start_id')
         s.value = actstart
         s.save()
@@ -361,7 +375,7 @@ def displayPushPull(request):
         'time': s.time.strftime("%H:%M"),
     })
 
-    s = Start.objects.filter(time__gt=s.time).order_by('time')[:10]
+    s = Start.objects.filter(scheduled_time__gt=s.scheduled_time, scheduled_time__year=s.scheduled_time.year, scheduled_time__month=s.scheduled_time.month, scheduled_time__day=s.scheduled_time.day).order_by('scheduled_time')
     for start in s:
         send.append({
             'strnbr': start.order,

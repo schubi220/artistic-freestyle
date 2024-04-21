@@ -91,8 +91,15 @@ class Start(models.Model):
     people = models.ManyToManyField(Person, blank=True)
     competition = models.ForeignKey(Competition, on_delete=models.PROTECT)
     info = models.JSONField(default=dict())
-    time = models.DateTimeField("Zeit des Starts")
+    scheduled_time = models.DateTimeField("Geplante Zeit des Starts", null=True)
+    calculated_time = models.TimeField("Berechnete Zeit des Starts", null=True)
     isActive = models.BooleanField("Started?", default=True)
+
+    @property
+    def time(self):
+        if (self.calculated_time) and (int(Config.get_config_value('timetrack')) > 0):
+            return self.calculated_time
+        return self.scheduled_time
 
     def competitors_names(self):
         if not self.id:
@@ -118,7 +125,7 @@ class Start(models.Model):
         return self.info['club'] if 'club' in self.info else clubs[2:]
 
     def __str__(self):
-        return str(self.order) + '# ' + self.info['titel']
+        return str(self.order) + '# ' + self.competitors_names() + ' (' + self.info['titel'] + ')'
 
 
 def generate_code():

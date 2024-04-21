@@ -66,13 +66,13 @@ class CompetitionFilter(admin.SimpleListFilter):
 
 
 class StartAdmin(CompetitionFilterModelAdmin):
-    ordering = ['time', 'competition', 'order']
+    ordering = ['scheduled_time', 'competition', 'order']
     fieldsets = (
-        (None, {'fields': ('order', 'people', 'competition', 'info', ('time', 'isActive'))}),
+        (None, {'fields': ('order', 'people', 'competition', 'info', ('scheduled_time', 'isActive'))}),
     )
-    list_display = ('order', 'competitors_names', 'competitors_clubs', 'get_titel', 'competition', 'time', 'isActive')
+    list_display = ('order', 'competitors_names', 'competitors_clubs', 'get_titel', 'competition', 'scheduled_time', 'calculated_time', 'isActive')
     list_filter = [CompetitionFilter]
-    date_hierarchy = 'time'
+    date_hierarchy = 'scheduled_time'
 
     def competitors_names(self, inst):
         return inst.competitors_names()
