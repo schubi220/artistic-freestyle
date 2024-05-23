@@ -34,14 +34,15 @@ def code(request):
 
 @csrf_exempt
 def input(request):
-    try:
-        j = Judge.objects.get(code__iexact=request.session.get('accesscode'))
-    except:
-        return HttpResponseRedirect(reverse('artistic:code'))
-
-    s = Start.objects.filter(competition=j.competition).order_by('order')
-
     if request.method == 'POST':
+        try:
+            j = Judge.objects.get(code=request.POST.get('accesscode'))
+        except:
+            messages.warning(request, 'Fehler beim speichern.')
+            return HttpResponseRedirect(reverse('artistic:code'))
+
+        s = Start.objects.filter(competition=j.competition).order_by('order')
+
         for start in s:
             try:
                 value = Value.objects.get(start=start, judge=j)
@@ -60,21 +61,31 @@ def input(request):
                 value.save()
 
         if 'ready' in request.POST:
-            del request.session['accesscode']
+            try:
+                del request.session['accesscode']
+            except:
+                c = None
             j.isReady = True
             j.save()
             messages.success(request, 'Wertung erfolgreich abgegeben, Danke :)')
             return HttpResponseRedirect(reverse('artistic:code'))
         return HttpResponseRedirect(reverse('artistic:input'))
-    else:
-        calc = getattr(eval('resultCalculators.'+j.competition.discipline), 'judgeResult')
-        values = calc(s, j)
 
-        return render(request, "artistic/input.html", {
-            'judge': j,
-            'starts': s,
-            'values': values
-        })
+    try:
+        j = Judge.objects.get(code=request.session.get('accesscode'))
+    except:
+        return HttpResponseRedirect(reverse('artistic:code'))
+
+    s = Start.objects.filter(competition=j.competition).order_by('order')
+
+    calc = getattr(eval('resultCalculators.'+j.competition.discipline), 'judgeResult')
+    values = calc(s, j)
+
+    return render(request, "artistic/input.html", {
+        'judge': j,
+        'starts': s,
+        'values': values
+    })
 
 
 def free(request):

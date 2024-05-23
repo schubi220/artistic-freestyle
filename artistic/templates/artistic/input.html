@@ -26,6 +26,7 @@
 {% block body %}
   <form action="{% url 'artistic:input' %}" method="post">
     {% csrf_token %}
+    <input type=hidden value="{{ judge.code }}" name="accesscode">
     <h2>Judge: {{ judge.possition }}, Altersklasse: {{ judge.competition.name }}</h2>
     <table class="table">
       <thead>
