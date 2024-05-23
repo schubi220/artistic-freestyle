@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block body %}
-  <form action="{% url 'artistic:displaySettings' %}" method="post">
+  <form action="{% url 'artistic:displayCategory' %}" method="post">
     {% csrf_token %}
 
     <select name="actcompetition" onchange="this.form.submit()">
@@ -38,8 +38,9 @@
           </tbody>
         </table>
         <button type="submit" class="btn btn-success" name="actstart" value="-1">Ausschalten</button>
-        <button type="submit" class="btn btn-success" name="timetrack" value="0">erster Zeitplan</button>
-        <button type="submit" class="btn btn-success" name="timetrack" value="1">Verspäting berechnen</button>
+        <button type="submit" class="btn btn-warning" name="timetrack" value="0">erster Zeitplan</button>
+        <button type="submit" class="btn btn-danger" name="timetrack" value="1">Verspäting berechnen</button>
+        <a class="btn btn-info" href="{% url 'artistic:displayTime' %}">Anzeige steuern, sotiert nach Startzeit</a>
         </div>
     	</div>
     	<div class="col-lg-4">

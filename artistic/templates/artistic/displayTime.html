@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block body %}
+  <form action="{% url 'artistic:displayTime' %}" method="post">
+    {% csrf_token %}
+
+    <div class="row">
+      <div class="col-lg-8">
+       <div style="height: 75vh; overflow: auto;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Verein</th>
+              <th>Titel</th>
+              <th>Zeit</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for start in starts %}
+              <tr id="start{{ start.id }}"{% if not start.isActive %} class="canceled"{% endif %}>
+                <td>{{ start.order }}</td>
+                <td>{{ start.competitors_names }}</td>
+                <td>{{ start.competitors_clubs }}</td>
+                <td>{{ start.info.titel }}</td>
+                <td>{{ start.time | date:"H:i" }}</td>
+                <td><button type="submit" name="actstart" value="{{ start.id }}" class="btn btn-sm btn-primary">Started</button></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <button type="submit" class="btn btn-success" name="actstart" value="-1">Ausschalten</button>
+        <button type="submit" class="btn btn-warning" name="timetrack" value="0">erster Zeitplan</button>
+        <button type="submit" class="btn btn-danger" name="timetrack" value="1">Verspäting berechnen</button>
+        <a class="btn btn-info" href="{% url 'artistic:displayCategory' %}">Anzeige steuern, sotiert nach Altersklasse</a>
+        </div>
+    	</div>
+    	<div class="col-lg-4">
+    		<div class="alert alert-secondary" role="alert">
+    		  <div class="text-center">
+                <h1 id="uhr"></h1>
+              </div>
+    		</div>
+    		<div class="alert alert-secondary" role="alert">
+    		  <div class="text-center">
+                <p id="currentCat">{{ actstart.competition.name }}</p>
+                <h1 id="currentName">{{ actstart.competitors_names }}</h1>
+                <p id="currentClub">{{ actstart.competitors_clubs }}</p>
+        				<p>&nbsp;</p>
+                <p id="currentAct">{{ actstart.info.titel }}</p>
+              </div>
+    		</div>
+    	</div>
+    </div>
+  </form>
+{% endblock %}
+
+{% block javascripts %}
+<script type="text/javascript">
+/* Funktion um die JSON Datei einzulesen.
+Der erste Eintrag ist der aktuelle Starter, die weiteren Einträge sind die kommenden Starter */
+	function parse(json){
+		var starters = JSON.parse(json);
+//		if(starters.length>0){
+			if(1){
+//			document.getElementById("currentStartNr").innerText = starters[0].strnbr;
+			document.getElementById("currentCat").innerText = starters[0].cat;
+			document.getElementById("currentName").innerText = starters[0].actors;
+			document.getElementById("currentClub").innerText = starters[0].club;
+			document.getElementById("currentAct").innerText = starters[0].titel;
+		}
+	}
+
+/* Funktion welche die Startliste abruft */
+	function pull(){
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				parse(this.responseText,'JSON');
+			}
+		};
+		xhttp.open("GET", "{% url 'artistic:displayPushPull' %}", true);
+		xhttp.send();
+	}
+
+/* Funktion welche den Modus abruft: Anzeigen der WordClock oder der Startliste */
+	function isSleep(){
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				//console.log(this.responseText);
+				setMode(this.responseText);
+			}
+		};
+		xhttp.open("GET", "{% url 'artistic:displayMode' %}", true);
+		xhttp.send();
+	}
+/* Funktion zum Umsetzung des Modus: Anzeigen der WordClock oder der Startliste */
+  var oldmode = 0;
+	function setMode(mode){
+		if (mode != oldmode) {
+      if (document.getElementById( "start" + mode ) != null)
+        document.getElementById( "start" + mode ).classList.add("table-info");
+      if (document.getElementById( "start" + oldmode ) != null)
+        document.getElementById( "start" + oldmode ).classList.remove("table-info");
+			pull();
+			oldmode = mode;
+		}
+	}
+
+    function uhrzeit() {
+      var jetzt = new Date(),
+          h = jetzt.getHours(),
+          m = jetzt.getMinutes(),
+          s = jetzt.getSeconds();
+      m = fuehrendeNull(m);
+      s = fuehrendeNull(s);
+      document.getElementById('uhr').innerText = h + ':' + m + ':' + s;
+    }
+  
+  function fuehrendeNull(zahl) {
+    zahl = (zahl < 10 ? '0' : '' )+ zahl;  
+    return zahl;
+  }
+
+  function init(){
+		isSleep();
+		window.setInterval(isSleep,5000);
+		window.setInterval(uhrzeit,500);
+	}
+</script>
+{% endblock %}

@@ -321,7 +321,7 @@ def choose_event(request):
     })
 
 
-def displaySettings(request):
+def displayCategory(request):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.path))
 
@@ -337,14 +337,20 @@ def displaySettings(request):
 
     actstart = request.POST.get('actstart', False)
     if actstart:
-        s = Start.objects.get(id=actstart)
-        s.calculated_time = datetime.now().astimezone(timezone(settings.TIME_ZONE))
-        print("Scheduled Task (Startzeit):  " + s.calculated_time.strftime("%H:%M") + str(s.calculated_time.tzinfo))
-        s.save()
-        print(s.calculated_time.tzinfo)
+        if int(actstart) > 0:
+            s = Start.objects.get(id=actstart)
+            s.calculated_time = datetime.now().astimezone(timezone(settings.TIME_ZONE))
+            s.save()
+
+            scheduled_time = s.scheduled_time.astimezone(timezone(settings.TIME_ZONE)).time()
+            time_scheduled = (int(scheduled_time.strftime("%H"))*60)+int(scheduled_time.strftime("%M"))
+            time_calculated = (int(s.calculated_time.strftime("%H"))*60)+int(s.calculated_time.strftime("%M"))
+            time_diff = time_calculated - time_scheduled
+            messages.warning(request, 'Verspätung von ' + str(time_diff) + 'Minuten.')
         s = Config.objects.get(key='start_id')
         s.value = actstart
         s.save()
+        return HttpResponseRedirect(reverse('artistic:displayTime'))
 
     cl = Competition.objects.filter(event__id=Config.get_config_value('event_id'))
     if not cl:
@@ -358,9 +364,52 @@ def displaySettings(request):
 
     s = Start.objects.filter(competition=c).order_by('order')
 
-    return render(request, "artistic/displaySettings.html", {
+    return render(request, "artistic/displayCategory.html", {
         'competitions': cl,
         'c': c,
+        'starts': s
+    })
+
+
+def displayTime(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('%s?next=%s' % (reverse('login'), request.path))
+
+    timetrack = request.POST.get('timetrack', False)
+    if timetrack:
+        s = Config.objects.get(key='timetrack')
+        s.value = timetrack
+        s.save()
+
+    nextstart = request.POST.get('actstart', False)
+    if nextstart:
+        s = Config.objects.get(key='start_id')
+        s.value = nextstart
+        s.save()
+        if int(nextstart) > 0:
+            s = Start.objects.get(id=nextstart)
+            s.calculated_time = datetime.now().astimezone(timezone(settings.TIME_ZONE))
+            s.save()
+
+            scheduled_time = s.scheduled_time.astimezone(timezone(settings.TIME_ZONE)).time()
+            time_scheduled = (int(scheduled_time.strftime("%H"))*60)+int(scheduled_time.strftime("%M"))
+            time_calculated = (int(s.calculated_time.strftime("%H"))*60)+int(s.calculated_time.strftime("%M"))
+            time_diff = time_calculated - time_scheduled
+            messages.warning(request, 'Verspätung von ' + str(time_diff) + 'Minuten.')
+
+    act = Config.get_config_value('start_id')
+    try:
+        actstart = Start.objects.get(id=act)
+        scheduled_time = actstart.scheduled_time
+        request.session['actcompetition'] = actstart.competition.id
+    except:
+        return HttpResponseRedirect(reverse('artistic:displayCategory'))
+
+
+    s = Start.objects.filter(scheduled_time__gt=scheduled_time, scheduled_time__year=scheduled_time.year, scheduled_time__month=scheduled_time.month, scheduled_time__day=scheduled_time.day).order_by('scheduled_time')[:10]
+
+    return render(request, "artistic/displayTime.html", {
+        'actstart': actstart,
         'starts': s
     })
 
@@ -386,7 +435,7 @@ def displayPushPull(request):
         'time': s.time.strftime("%H:%M"),
     })
 
-    s = Start.objects.filter(scheduled_time__gt=s.scheduled_time, scheduled_time__year=s.scheduled_time.year, scheduled_time__month=s.scheduled_time.month, scheduled_time__day=s.scheduled_time.day).order_by('scheduled_time')
+    s = Start.objects.filter(scheduled_time__gt=s.scheduled_time, scheduled_time__year=s.scheduled_time.year, scheduled_time__month=s.scheduled_time.month, scheduled_time__day=s.scheduled_time.day).order_by('scheduled_time')[:9]
     for start in s:
         send.append({
             'strnbr': start.order,
