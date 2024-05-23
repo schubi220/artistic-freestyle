@@ -68,6 +68,8 @@ def input(request):
             j.isReady = True
             j.save()
             messages.success(request, 'Wertung erfolgreich abgegeben, Danke :)')
+            if request.user.has_perm('artistic.change_value'):
+                return HttpResponseRedirect(reverse('artistic:free'))
             return HttpResponseRedirect(reverse('artistic:code'))
         return HttpResponseRedirect(reverse('artistic:input'))
 

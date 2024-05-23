@@ -46,11 +46,11 @@
               <td>{{ start.competitors_clubs }}</td>
               {% for jtype in judgetypes %}
                 {% with res=result.full|return_item:jtype|return_item:start.id %}
-                  <td>{{ res.values.result|percent:2 }}</td>
+                  <td>{{ res.values.result|percent:3 }}</td>
                 {% endwith %}
               {% endfor %}
               {% with res=result.full.full|return_item:start.id %}
-                <td>{{ res.result|percent:2 }}</td>
+                <td>{{ res.result|percent:3 }}</td>
                 <td>{{ res.place }}</td>
               {% endwith %}
             </tr>

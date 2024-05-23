@@ -157,8 +157,8 @@ def pdfnotice(context):
         row.append(Paragraph(start.competitors_clubs(), sample_style_sheet['Normal']))
         row.append(Paragraph(start.info['titel'], sample_style_sheet['Normal']))
         for jtype in 'TPD':
-            row.append(f"{context['result']['full'][jtype][cnt].values['result'] * 100.0:.{2}f}%")
-        row.append(f"{context['result']['full']['full'][cnt]['result'] * 100.0:.{2}f}%")
+            row.append(f"{context['result']['full'][jtype][cnt].values['result'] * 100.0:.{3}f}%")
+        row.append(f"{context['result']['full']['full'][cnt]['result'] * 100.0:.{3}f}%")
         data.append(row)
 
     t = Table(data, colWidths=(None, 35*mm, 33*mm, 48*mm, None, None, None, None))
