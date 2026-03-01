@@ -7,6 +7,7 @@ Ein System zur Auswertung von Artistic Freestyle.
 
 ```bash
 git clone
-pip3 install requirements.txt
-python manage.py runserver
+pip3 install -r requirements.txt
+python3 manage.py migrate
+python3 manage.py runserver
 ```
