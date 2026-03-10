@@ -10,7 +10,7 @@ def judgeResult(s: QuerySet, judge: Judge):
         try:
             values[start.id] = Value.objects.get(start=start, judge__possition=judge.possition)
         except Value.DoesNotExist:
-            values[start.id] = Value(start=start, judge=judge)
+            values[start.id] = Value(start=start, judge=judge, values={0:0,1:0,2:0,'total':0})
 
         if judge.type == 'D':
             values[start.id].values['total'] = (10-(values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))) if values[start.id].values.get('2',0) < 2 else (10-((values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))/math.sqrt(values[start.id].values.get('2',0))))
