@@ -9,6 +9,7 @@
     {% csrf_token %}
 
     <select name="actcompetition" onchange="this.form.submit()">
+      <option value="0">Altesklasse wählen</option>
       {% for competiton in competitions %}
         <option value="{{ competiton.id }}"{% if competiton.id == c.id %} selected{% endif %}>{{ competiton.id }}# {{ competiton.name }}</option>
       {% endfor %}
