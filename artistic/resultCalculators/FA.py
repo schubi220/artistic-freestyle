@@ -5,27 +5,25 @@ import math
 def judgeResult(s: QuerySet, judge: Judge):
     values = {}
     sum = 0
+    sort = []
     for start in s:
         try:
             values[start.id] = Value.objects.get(start=start, judge__possition=judge.possition)
         except Value.DoesNotExist:
             values[start.id] = Value(start=start, judge=judge)
-        if judge.type == 'D':
-            values[start.id].values['summe'] = (10-(values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))) if values[start.id].values.get('2',0) < 2 else (10-((values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))/math.sqrt(values[start.id].values.get('2',0))))
-        else:
-            values[start.id].values['summe'] = values[start.id].values.get('0',0)+values[start.id].values.get('1',0)+values[start.id].values.get('2',0)
-        sum += values[start.id].values['summe']
 
-    sort = []
-    for start in s:
-        values[start.id].values['result'] = (values[start.id].values['summe'] / sum) if sum > 0 else 0
-        a = str(values[start.id].values['result'])
+        if judge.type == 'D':
+            values[start.id].values['total'] = (10-(values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))) if values[start.id].values.get('2',0) < 2 else (10-((values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))/math.sqrt(values[start.id].values.get('2',0))))
+        else:
+            values[start.id].values['total'] = values[start.id].values.get('0',0)+values[start.id].values.get('1',0)+values[start.id].values.get('2',0)
+
+        a = str(values[start.id].values['total'])
         while a in sort: a += '0'
         sort.append(float(a))
 
     sort.sort(reverse=True)
     for start in s:
-        values[start.id].values['place'] = sort.index(values[start.id].values['result']) + 1
+        values[start.id].values['place'] = sort.index(values[start.id].values['total']) + 1
 
     return values
 
@@ -44,13 +42,12 @@ def fullResult(s: QuerySet, j: QuerySet):
             res = result[judge.type][judge.possition][i]
 
             if not i in result['full'][judge.type]:
-                result['full'][judge.type][i] = Value(start=res.start, judge=res.judge, values={0:0,1:0,2:0,'summe':0,'result':0})
+                result['full'][judge.type][i] = Value(start=res.start, judge=res.judge, values={0:0,1:0,2:0,'total':0})
 
             result['full'][judge.type][i].values[0] += res.values.get('0',0)
             result['full'][judge.type][i].values[1] += res.values.get('1',0)
             result['full'][judge.type][i].values[2] += res.values.get('2',0)
-            result['full'][judge.type][i].values['summe'] += res.values.get('summe',0)
-            result['full'][judge.type][i].values['result'] += res.values.get('result',0)
+            result['full'][judge.type][i].values['total'] += res.values.get('total',0)
     
     sum = 0
     for type in result['full']:
@@ -60,26 +57,23 @@ def fullResult(s: QuerySet, j: QuerySet):
             result['full'][type][i].values[1] /= count
             result['full'][type][i].values[2] /= count
             
-            result['full'][type][i].values['summe'] /= count
-            result['full'][type][i].values['result'] /= count
+            result['full'][type][i].values['total'] /= count
 
             if type == 'D':
-                result['full'][type][i].values['summe'] = (10-(result['full'][type][i].values.get(0,0)*0.5+result['full'][type][i].values.get(1,0))) if result['full'][type][i].values.get(2,0) < 2 else (10-((result['full'][type][i].values.get(0,0)*0.5+result['full'][type][i].values.get(1,0))/math.sqrt(result['full'][type][i].values.get(2,0))))
-                sum += result['full'][type][i].values['summe']
+                result['full'][type][i].values['total'] = (10-(result['full'][type][i].values.get(0,0)*0.5+result['full'][type][i].values.get(1,0))) if result['full'][type][i].values.get(2,0) < 2 else (10-((result['full'][type][i].values.get(0,0)*0.5+result['full'][type][i].values.get(1,0))/math.sqrt(result['full'][type][i].values.get(2,0))))
+                sum += result['full'][type][i].values['total']
 
     result['full']['full'] = {}
     sort = {}
     for i in result['full']['D']:
-        result['full']['D'][i].values['result'] = (result['full']['D'][i].values['summe'] / sum) if sum > 0 else 0
-
-        res = result['full']['T'][i].values['result']*0.45+result['full']['P'][i].values['result']*0.45+result['full']['D'][i].values['result']*0.1
+        res = (result['full']['T'][i].values['total']*0.45/30+result['full']['P'][i].values['total']*0.45/30+result['full']['D'][i].values['total']*0.1/10)*100
         a = str(res)
         while a in sort: a += '0'
         sort[a] = i
 
     pl = 1
     for res in sorted(sort, reverse=True):
-        result['full']['full'][sort[res]] = {'result': float(res), 'place': pl}
+        result['full']['full'][sort[res]] = {'total': float(res), 'place': pl}
         if res[-1] != '0':
             pl += 1
 

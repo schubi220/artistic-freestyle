@@ -43,12 +43,12 @@ def pdfresult(context):
         row.append(start.order)
         row.append(start.competitors_names()[0:32])
         row.append(start.competitors_clubs()[0:18])
-        row.append(str(context['result']['full']['full'][cnt]['place']) +", "+ f"{context['result']['full']['full'][cnt]['result'] * 100.0:.{2}f}%")
+        row.append(str(context['result']['full']['full'][cnt]['place']) +", "+ f"{context['result']['full']['full'][cnt]['total']:.{3}f}")
         for jtype in 'TPD':
-            row.append(f"{context['result']['full'][jtype][cnt].values['result'] * 100.0:.{2}f}%")
+            row.append(f"{context['result']['full'][jtype][cnt].values['total']:.{3}f}")
             for judge in context['judges']:
                 if judge.type == jtype:
-                    row.append(str(context['result'][jtype][judge.possition][cnt].values['place']) +", "+ f"{context['result'][jtype][judge.possition][cnt].values['result'] * 100.0:.{2}f}%")
+                    row.append(str(context['result'][jtype][judge.possition][cnt].values['place']) +", "+ f"{context['result'][jtype][judge.possition][cnt].values['total']:.{3}f}")
         data.append(row)
         h += 6
 
@@ -84,10 +84,10 @@ def pdfresult(context):
             row.append(start.order)
             row.append(start.competitors_names()[0:32])
             row.append(start.competitors_clubs()[0:18])
-            row.append(f"{context['result']['full'][jtype][start.id].values['result'] * 100.0:.{2}f}%")
+            row.append(f"{context['result']['full'][jtype][start.id].values['total']:.{3}f}")
             for judge in context['judges']:
                 if judge.type == jtype:
-                    row.append(str(context['result'][jtype][judge.possition][start.id].values['place']) +", "+ f"{context['result'][jtype][judge.possition][start.id].values['result'] * 100.0:.{2}f}%")
+                    row.append(str(context['result'][jtype][judge.possition][start.id].values['place']) +", "+ f"{context['result'][jtype][judge.possition][start.id].values['total']:.{3}f}")
                     row.append(context['result'][jtype][judge.possition][start.id].values.get('0'))
                     row.append(context['result'][jtype][judge.possition][start.id].values.get('1'))
                     row.append(context['result'][jtype][judge.possition][start.id].values.get('2'))
@@ -157,8 +157,8 @@ def pdfnotice(context):
         row.append(Paragraph(start.competitors_clubs(), sample_style_sheet['Normal']))
         row.append(Paragraph(start.info['titel'], sample_style_sheet['Normal']))
         for jtype in 'TPD':
-            row.append(f"{context['result']['full'][jtype][cnt].values['result'] * 100.0:.{3}f}%")
-        row.append(f"{context['result']['full']['full'][cnt]['result'] * 100.0:.{3}f}%")
+            row.append(f"{context['result']['full'][jtype][cnt].values['total']:.{3}f}")
+        row.append(f"{context['result']['full']['full'][cnt]['total']:.{3}f}")
         data.append(row)
 
     t = Table(data, colWidths=(None, 35*mm, 33*mm, 48*mm, None, None, None, None))
