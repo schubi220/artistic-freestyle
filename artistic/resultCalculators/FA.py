@@ -43,25 +43,13 @@ def fullResult(s: QuerySet, j: QuerySet):
 
             if not i in result['full'][judge.type]:
                 result['full'][judge.type][i] = Value(start=res.start, judge=res.judge, values={0:0,1:0,2:0,'total':0})
-
-            result['full'][judge.type][i].values[0] += res.values.get('0',0)
-            result['full'][judge.type][i].values[1] += res.values.get('1',0)
-            result['full'][judge.type][i].values[2] += res.values.get('2',0)
             result['full'][judge.type][i].values['total'] += res.values.get('total',0)
     
     sum = 0
     for type in result['full']:
         count = len(result[type])
         for i in result['full'][type]:
-            result['full'][type][i].values[0] /= count
-            result['full'][type][i].values[1] /= count
-            result['full'][type][i].values[2] /= count
-            
             result['full'][type][i].values['total'] /= count
-
-            if type == 'D':
-                result['full'][type][i].values['total'] = (10-(result['full'][type][i].values.get(0,0)*0.5+result['full'][type][i].values.get(1,0))) if result['full'][type][i].values.get(2,0) < 2 else (10-((result['full'][type][i].values.get(0,0)*0.5+result['full'][type][i].values.get(1,0))/math.sqrt(result['full'][type][i].values.get(2,0))))
-                sum += result['full'][type][i].values['total']
 
     result['full']['full'] = {}
     sort = {}
