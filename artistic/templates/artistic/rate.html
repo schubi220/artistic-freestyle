@@ -5,23 +5,38 @@
 {% block body %}
 {% with judgetypes='TPD' %}
   <h1>{{ competiton.name }}</h1>
-  <nav>
-    <ul class="nav nav-tabs" id="nav-tab" role="tablist">
+  <span class="placeholder col-12 bg-light"></span>
+
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
       <button class="nav-link active" id="result-tab" data-bs-toggle="tab" data-bs-target="#result" type="button" role="tab" aria-controls="result" aria-selected="true">Gesamt</button>
+    </li>
+    <li class="nav-item" role="presentation">
       <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail" type="button" role="tab" aria-controls="detail" aria-selected="false">Übersicht</button>
-      {% for jtype in judgetypes %}
-      <button class="nav-link" id="tab{{ jtype }}1-tab" data-bs-toggle="tab" data-bs-target="#tab{{ jtype }}1" type="button" role="tab" aria-controls="tab{{ jtype }}1" aria-selected="false">{{ jtype }} 1</button>
-      <button class="nav-link" id="tab{{ jtype }}2-tab" data-bs-toggle="tab" data-bs-target="#tab{{ jtype }}2" type="button" role="tab" aria-controls="tab{{ jtype }}2" aria-selected="false">{{ jtype }} 2</button>
-      {% endfor %}
-      <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'notice' %}" class="nav-link" role="tab" target="_blank">PDF Aushang</a></li>
-      <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'result' %}" class="nav-link" role="tab" target="_blank">PDF Übersicht</a></li>
-      <li class="nav-item"><a href="{% url 'artistic:ratepdf' 'certificate' %}" class="nav-link" role="tab" target="_blank">PDF Urkunden</a></li>
-      <li class="nav-item"><a href="{% url 'artistic:select' %}" class="nav-link" role="tab">mehrere Alterklassen wählen</a></li>
-    </ul>
-  </nav>
+    </li>
+    {% for jtype in judgetypes %}
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab{{ jtype }}1-tab" data-bs-toggle="tab" data-bs-target="#tab{{ jtype }}1" type="button" role="tab" aria-controls="tab{{ jtype }}1" aria-selected="false">{{ jtype }} 1</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab{{ jtype }}2-tab" data-bs-toggle="tab" data-bs-target="#tab{{ jtype }}2" type="button" role="tab" aria-controls="tab{{ jtype }}2" aria-selected="false">{{ jtype }} 2</button>
+      </li>
+    {% endfor %}
+    <li class="nav-item">
+      <a href="{% url 'artistic:ratepdf' 'notice' %}" class="nav-link" role="tab" target="_blank">PDF Aushang</a>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'artistic:ratepdf' 'result' %}" class="nav-link" role="tab" target="_blank">PDF Übersicht</a>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'artistic:ratepdf' 'certificate' %}" class="nav-link" role="tab" target="_blank">PDF Urkunden</a>
+    </li>
+    <li class="nav-item">
+      <a href="{% url 'artistic:select' %}" class="nav-link" role="tab">mehrere Alterklassen wählen</a>
+    </li>
+  </ul>
 
-  <div class="tab-content" id="nav-tabContent">
-
+  <div class="tab-content" id="myTabContent">
     <div role="tabpanel" class="tab-pane fade show active" id="result" aria-labelledby="result-tab">
       <table class="table align-middle table-sm">
         <thead>
@@ -185,8 +200,6 @@
       </table>
     </div>
     {% endfor %}
-
-
   </div>
 {% endwith %}
 {% endblock %}
