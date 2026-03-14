@@ -29,15 +29,17 @@ def calculate_start_time():
 
         if(time_diff > 1):
             print("Berechne Verspätungen", file=sys.stdout)
-            s = Start.objects.filter(scheduled_time__gt=s.scheduled_time, scheduled_time__year=s.scheduled_time.year, scheduled_time__month=s.scheduled_time.month, scheduled_time__day=s.scheduled_time.day).order_by('scheduled_time')
-            for start in s:
+            starts = Start.objects.filter(scheduled_time__gt=s.scheduled_time, scheduled_time__year=s.scheduled_time.year, scheduled_time__month=s.scheduled_time.month, scheduled_time__day=s.scheduled_time.day).order_by('scheduled_time')
+            for start in starts:
+                print("Berechne Verspätung:  " + start.id, file=sys.stdout)
                 start.calculated_time = start.scheduled_time.astimezone(timezone(settings.TIME_ZONE)) + timedelta(minutes=time_diff)
                 start.save()
 
-    print("\r\n", file=sys.stdout)
+    else:
+        print("Scheduled Task (Ausgeschaltet)", file=sys.stdout)
 
 def start():
-    scheduler.add_job(calculate_start_time, "cron", minute="*/2", id="calculate_start_time", replace_existing=True)
+    scheduler.add_job(calculate_start_time, "cron", minute="*/5", id="calculate_start_time", replace_existing=True)
 
     # Add the scheduled jobs to the Django admin interface
     register_events(scheduler)

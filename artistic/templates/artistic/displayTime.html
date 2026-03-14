@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block body %}
-  <form action="{% url 'artistic:displayTime' %}" method="post">
+  <form action="{% url 'artistic:displayControll' %}" method="post">
     {% csrf_token %}
+    <input type="hidden" name="view" value="time">
 
     <div class="row">
       <div class="col-lg-8">
@@ -34,7 +35,7 @@
         <button type="submit" class="btn btn-success" name="actstart" value="-1">Ausschalten</button>
         <button type="submit" class="btn btn-warning" name="timetrack" value="0">erster Zeitplan</button>
         <button type="submit" class="btn btn-danger" name="timetrack" value="1">Verspäting berechnen</button>
-        <a class="btn btn-info" href="{% url 'artistic:displayCategory' %}">Anzeige steuern, sotiert nach Altersklasse</a>
+	<a class="btn btn-info" href="{% url 'artistic:displayControll' %}">Anzeige steuern, sotiert nach Altersklasse</a>
         </div>
     	</div>
     	<div class="col-lg-4">
