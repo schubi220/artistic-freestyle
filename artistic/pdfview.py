@@ -87,6 +87,8 @@ def pdfresult(context):
             row.append(f"{context['result']['full'][jtype][start.id].values['total']:.{3}f}")
             for judge in context['judges']:
                 if judge.type == jtype:
+                    if context['result']['full'][jtype][start.id].values.get('min') == judge.possition or context['result']['full'][jtype][start.id].values.get('max') == judge.possition:
+                        style.append(('BACKGROUND', (len(row),len(data)), (len(row),len(data)),colors.pink))
                     row.append(str(context['result'][jtype][judge.possition][start.id].values['place']) +", "+ f"{context['result'][jtype][judge.possition][start.id].values['total']:.{3}f}")
                     row.append(context['result'][jtype][judge.possition][start.id].values.get('0'))
                     row.append(context['result'][jtype][judge.possition][start.id].values.get('1'))

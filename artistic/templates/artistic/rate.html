@@ -5,6 +5,13 @@
 {% block body %}
 {% with judgetypes='TPD' %}
   <h1>{{ competiton.name }}</h1>
+  <form action="{% url 'artistic:rate' %}" method="post">
+    {% csrf_token %}
+    <div class="form-check form-switch">
+	    <input class="form-check-input" type="checkbox" role="switch" id="switchCheckDefault" name="removejudges" value="True" onchange="this.form.submit()"{% if removejudges %} checked{% endif %}> 
+      <label class="form-check-label" for="switchCheckDefault">Streichwertung nutzen?</label>
+    </div>
+  </form>
   <span class="placeholder col-12 bg-light"></span>
 
   <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -148,8 +155,10 @@
               {% endwith %}
               {% for judge in judges %}{% if judge.type == jtype %}
                 {% with value=result|return_item:jtype|return_item:judge.possition|return_item:start.id %}
-                  <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
-                  <td>{{ value.values.total|floatformat:3 }}</td>
+                {% with val=result.full|return_item:jtype|return_item:start.id %}
+                  <td{% if val.values.min == judge.possition or val.values.max == judge.possition %} class="table-danger"{% endif %} style="border-left: thin solid #000;">{{ value.values.place }}</td>
+                  <td{% if val.values.min == judge.possition or val.values.max == judge.possition %} class="table-danger"{% endif %}>{{ value.values.total|floatformat:3 }}</td>
+                {% endwith %}
                 {% endwith %}
               {% endif %}{% endfor %}
             </tr>
@@ -187,11 +196,13 @@
               {% endwith %}
               {% for judge in judges %}{% if judge.type == jtype %}
                 {% with value=result|return_item:jtype|return_item:judge.possition|return_item:start.id %}
-                  <td style="border-left: thin solid #000;">{{ value.values.place }}</td>
-                  <td>{{ value.values.total|floatformat:3 }}</td>
+                {% with val=result.full|return_item:jtype|return_item:start.id %}
+		<td class="table-info">{{ value.values.place }}</td>
+		  <td{% if val.values.min == judge.possition or val.values.max == judge.possition %} class="table-danger"{% endif %}>{{ value.values.total|floatformat:3 }}</td>
                   <td>{{ value.values.0 }}</td>
                   <td>{{ value.values.1 }}</td>
                   <td>{{ value.values.2 }}</td>
+                {% endwith %}
                 {% endwith %}
               {% endif %}{% endfor %}
             </tr>

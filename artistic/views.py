@@ -204,13 +204,14 @@ def rate(request):
     j = Judge.objects.filter(competition=c)
 
     calc = getattr(eval('resultCalculators.'+c.discipline), 'fullResult')
-    result = calc(s, j)
+    result = calc(s, j, bool(request.POST.get('removejudges', False)))
 
     context = {
         'competiton': c,
         'starts': s,
         'judges': j,
-        'result': result
+        'result': result,
+        'removejudges':  bool(request.POST.get('removejudges', False))
     }
     pdfview.pdfresult(context)
     pdfview.pdfnotice(context)

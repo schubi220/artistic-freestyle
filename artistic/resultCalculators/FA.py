@@ -27,7 +27,7 @@ def judgeResult(s: QuerySet, judge: Judge):
 
     return values
 
-def fullResult(s: QuerySet, j: QuerySet):
+def fullResult(s: QuerySet, j: QuerySet, remove=False):
     result = {}
     result['full'] = {}
 
@@ -43,13 +43,22 @@ def fullResult(s: QuerySet, j: QuerySet):
 
             if not i in result['full'][judge.type]:
                 result['full'][judge.type][i] = Value(start=res.start, judge=res.judge, values={0:0,1:0,2:0,'total':0})
+                result['full'][judge.type][i].values['remove'] = {}
             result['full'][judge.type][i].values['total'] += res.values.get('total',0)
+            result['full'][judge.type][i].values['remove'][judge.possition] = res.values.get('total',0)
     
     sum = 0
     for type in result['full']:
         count = len(result[type])
         for i in result['full'][type]:
-            result['full'][type][i].values['total'] /= count
+            if remove and count > 2:
+                result['full'][type][i].values['min'] = min(result['full'][type][i].values['remove'], key=result['full'][type][i].values['remove'].get)
+                result['full'][type][i].values['max'] = max(result['full'][type][i].values['remove'], key=result['full'][type][i].values['remove'].get)
+                result['full'][type][i].values['total'] -= result['full'][type][i].values['remove'][result['full'][type][i].values['min']]
+                result['full'][type][i].values['total'] -= result['full'][type][i].values['remove'][result['full'][type][i].values['max']]
+                result['full'][type][i].values['total'] /= count-2
+            else:
+                result['full'][type][i].values['total'] /= count
 
     result['full']['full'] = {}
     sort = {}
