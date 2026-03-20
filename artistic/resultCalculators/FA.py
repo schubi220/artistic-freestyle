@@ -13,7 +13,13 @@ def judgeResult(s: QuerySet, judge: Judge):
             values[start.id] = Value(start=start, judge=judge, values={0:0,1:0,2:0,'total':0})
 
         if judge.type == 'D':
-            values[start.id].values['total'] = (10-(values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))) if values[start.id].values.get('2',0) < 2 else (10-((values[start.id].values.get('0',0)*0.5+values[start.id].values.get('1',0))/math.sqrt(values[start.id].values.get('2',0))))
+            dismount_scores = values[start.id].values
+            drivers_count = dismount_scores.get('2', 0)
+            base = dismount_scores.get('0', 0) * 0.5 + dismount_scores.get('1', 0)
+            
+            score = 10 - (base / (math.sqrt(drivers_count) if drivers_count > 2 else 1))
+            dismount_scores['total'] = max(0, score)
+
         else:
             values[start.id].values['total'] = values[start.id].values.get('0',0)+values[start.id].values.get('1',0)+values[start.id].values.get('2',0)
 
