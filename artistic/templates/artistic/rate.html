@@ -55,7 +55,7 @@
             {% for jtype in judgetypes %}
               <th>{{ jtype }}</th>
             {% endfor %}
-            <th>Ergebniss</th>
+            <th>Ergebnis</th>
             <th>Platz</th>
           </tr>
         </thead>
@@ -175,7 +175,7 @@
             <th>Name</th>
             <th>Verein</th>
             <th>Titel</th>
-            <th>Ergebniss</th>
+            <th>Ergebnis</th>
             {% for judge in judges %}{% if judge.type == jtype %}
               <th colspan="2" style="border-left: thin solid #000;">{{ judge.possition }}</th>
               <th>1</th>
