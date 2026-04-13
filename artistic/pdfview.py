@@ -12,7 +12,7 @@ import datetime
 
 def pdfresult(context):
     c = SimpleDocTemplate(str(settings.BASE_DIR) + '/tmp/pdfresult.pdf', pagesize=landscape(A3), rightMargin=56, leftMargin=56, topMargin=56, bottomMargin=56)
-    c.title = "Ergebniss "+context['competiton'].name
+    c.title = "Ergebnis "+context['competiton'].name
     pagecontext = []
     sample_style_sheet = getSampleStyleSheet()
     pagecontext.append(Paragraph(context['competiton'].name, sample_style_sheet['Heading1']))
@@ -148,7 +148,7 @@ def pdfnotice(context):
     row = ['Platz', 'Name', 'Verein', 'Titel']
     for jtype in 'TPD':
         row.append(jtype)
-    row.append('Ergebniss')
+    row.append('Ergebnis')
     data.append(row)
 
     for cnt in context['result']['full']['full']:
