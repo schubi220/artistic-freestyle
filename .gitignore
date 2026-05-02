@@ -1,6 +1,7 @@
 # Custom
 tmp/*
 !tmp/.gitkeep
+Einrad/settings.py
 
 # Config folder
 .secrets/
